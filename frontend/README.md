@@ -69,22 +69,3 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
 
-
-abstract:
-
-In modern education systems, student performance is usually measured using marks and attendance. However, these traditional methods do not provide insights into how students interact with learning materials.
-
-This project proposes a Web-Based Learning Behaviour Data Analytics System for Students that collects and analyzes student interaction data such as time spent on topics, topic visit frequency, and quiz performance.
-
-The system stores this data in a database and applies data analytics techniques to identify learning patterns and detect difficult topics. A dashboard is provided to visualize insights using charts and graphs, helping students understand their learning behaviour and improve performance.
-
-This approach enables a more data-driven method to support academic learning and performance analysis.
-
-
-Technology Stack Summary:
-
-Frontend        :	  React + HTML + CSS
-Backend         :	  Python (Flask)
-Database        :     MySQL
-Analytics	    :     Pandas
-Visualization   :     Chart.js
