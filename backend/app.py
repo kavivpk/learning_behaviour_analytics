@@ -129,9 +129,21 @@ def save_quiz_score():
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO activity (user_id, lesson_name, quiz_score, time_spent) VALUES (%s, %s, %s, %s)",
-            (student_id, topic, score, 0)
+            "SELECT id FROM activity WHERE user_id=%s AND lesson_name=%s ORDER BY id DESC LIMIT 1",
+            (student_id, topic)
         )
+        existing = cursor.fetchone()
+
+        if existing:
+            cursor.execute(
+                "UPDATE activity SET quiz_score=%s WHERE id=%s",
+                (score, existing[0])
+            )
+        else:
+            cursor.execute(
+                "INSERT INTO activity (user_id, lesson_name, quiz_score, time_spent) VALUES (%s, %s, %s, %s)",
+                (student_id, topic, score, 0)
+            )
         conn.commit()
         cursor.close()
         conn.close()
@@ -156,19 +168,23 @@ def studied_topics():
         return jsonify({'studied_topics': []})
     
     try:
-        conn = get_db_connection()  # ← mysql.connector use பண்றோம்
+        conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT DISTINCT topic FROM activity 
-            WHERE user_id = %s AND time_spent > 0
+            SELECT lesson_name, SUM(time_spent) as total_time 
+            FROM activity 
+            WHERE user_id = %s 
+            GROUP BY lesson_name
+            HAVING total_time > 0
         """, (user_id,))
         rows = cursor.fetchall()
         cursor.close()
         conn.close()
-        topics = [row[0] for row in rows]
+        
+        topics = [{"name": row[0], "time": row[1]} for row in rows]
         return jsonify({'studied_topics': topics})
     except Exception as e:
-        print("Error:", e)  # ← terminal la error பாக்கலாம்
+        print("Error:", e)
         return jsonify({'studied_topics': [], 'error': str(e)}), 500
 
 if __name__ == "__main__":

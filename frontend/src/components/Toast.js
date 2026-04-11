@@ -8,32 +8,41 @@ function Toast({ message, type, onClose }) {
     return () => clearTimeout(timer);
   }, [onClose]);
 
-  const bgColor = type === "success" ? "#00ff99" : type === "error" ? "#ff6b6b" : "#0EA5E9";
+  const accentColor = type === "success" ? "var(--accent-secondary)" : type === "error" ? "#ff6b6b" : "var(--accent-color)";
 
   return (
     <div style={{
       position: "fixed",
-      top: "20px",
-      right: "20px",
-      backgroundColor: bgColor,
-      color: "#000",
-      padding: "14px 20px",
-      borderRadius: "12px",
-      fontWeight: "bold",
-      fontSize: "14px",
+      top: "30px",
+      right: "30px",
+      backgroundColor: "var(--toast-bg)",
+      color: "var(--text-main)",
+      padding: "16px 24px",
+      borderRadius: "16px",
+      fontWeight: "600",
+      fontSize: "15px",
       zIndex: 9999,
-      boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+      boxShadow: "0 15px 40px rgba(0,0,0,0.15)",
       display: "flex",
       alignItems: "center",
-      gap: "10px",
-      minWidth: "250px",
+      gap: "12px",
+      minWidth: "300px",
+      border: `1px solid var(--border-color)`,
+      borderLeft: `6px solid ${accentColor}`,
       animation: "slideIn 0.3s ease",
     }}>
-      {type === "success" ? "✅" : type === "error" ? "❌" : "ℹ️"}
-      {message}
+      <div style={{ fontSize: "20px" }}>
+        {type === "success" ? "✅" : type === "error" ? "❌" : "ℹ️"}
+      </div>
+      <div style={{ flex: 1 }}>{message}</div>
       <span
         onClick={onClose}
-        style={{ marginLeft: "auto", cursor: "pointer", fontSize: "16px" }}
+        style={{ 
+          cursor: "pointer", 
+          fontSize: "18px", 
+          color: "var(--text-muted)",
+          padding: "4px"
+        }}
       >
         ✕
       </span>

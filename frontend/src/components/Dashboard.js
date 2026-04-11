@@ -13,6 +13,8 @@ import {
 } from "chart.js";
 import { Bar, Line } from "react-chartjs-2";
 import Toast from "./Toast";
+import ThemeToggle from "./ThemeToggle";
+import { quizData } from "../data/quizData";
 
 ChartJS.register(
   CategoryScale,
@@ -73,6 +75,20 @@ const topics = [
   { name: "HTML & CSS", url: "https://www.w3schools.com/html/html_css.asp", icon: "🎭", color: "#E44D26" },
 ];
 
+// Professional SVG Icon Components
+const IconBolt = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+);
+const IconTarget = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+);
+const IconAward = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+);
+const IconBell = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+);
+
 function Dashboard() {
   const navigate = useNavigate();
   const [timers, setTimers] = useState({});
@@ -80,8 +96,13 @@ function Dashboard() {
   const [activityData, setActivityData] = useState([]);
   const [analyticsData, setAnalyticsData] = useState(null);
   const [toast, setToast] = useState(null);
-  const studentId = localStorage.getItem("student_id");
+  const studentId = localStorage.getItem("student_id") || localStorage.getItem("user_id");
   const studentName = localStorage.getItem("student_name");
+
+  // Get current theme text color for charts
+  const getThemeTextColor = () => {
+    return localStorage.getItem("theme") === "light" ? "#475569" : "rgba(255,255,255,0.7)";
+  };
 
   const showToast = (message, type) => {
     setToast({ message, type });
@@ -119,6 +140,13 @@ function Dashboard() {
     }
   };
 
+  const hasQuiz = (topicName) =>
+    Boolean(
+      quizData[topicName] ||
+      quizData[topicName.toLowerCase()] ||
+      quizData[topicName.toUpperCase()]
+    );
+
   const handleTopicClick = (topic) => {
     const startTime = Date.now();
     if (activeTopics[topic.name]) return;
@@ -153,7 +181,6 @@ function Dashboard() {
         setActiveTopics((prev) => ({ ...prev, [topic.name]: false }));
         setTimers((prev) => ({ ...prev, [topic.name]: 0 }));
 
-        // Alert illama Toast kaatum ✅
         showToast(`📚 "${topic.name}" — ${formatTime(timeSpent)} studied!`, "success");
       }
     }, 1000);
@@ -161,12 +188,13 @@ function Dashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem("student_id");
+    localStorage.removeItem("user_id");
     localStorage.removeItem("student_name");
     navigate("/");
   };
 
   return (
-    <div style={{ minHeight: "100vh", color: "white" }}>
+    <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-color)", color: "var(--text-main)" }} className="animate-fade">
 
       {/* Toast Notification */}
       {toast && (
@@ -177,353 +205,320 @@ function Dashboard() {
         />
       )}
 
-      {/* Navbar */}
-      <div style={{
+      {/* Elite Navbar */}
+      <nav style={{
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: "15px 30px",
-        backgroundColor: "rgba(0,0,0,0.4)",
-        backdropFilter: "blur(10px)",
-        borderBottom: "1px solid rgba(255,255,255,0.1)",
+        padding: "1rem 2.5rem",
+        backgroundColor: "var(--bg-card)",
+        borderBottom: "1px solid var(--border-color)",
         position: "sticky",
         top: 0,
         zIndex: 100,
+        boxShadow: "0 10px 30px rgba(0,0,0,0.05)"
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <span style={{ fontSize: "24px" }}>📊</span>
-          <span style={{ fontSize: "18px", fontWeight: "bold", color: "white" }}>
-            Learning Analytics
+          <div style={{ 
+            width: "36px", height: "36px", 
+            background: "var(--accent-gradient)", 
+            borderRadius: "10px", 
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <IconBolt />
+          </div>
+          <span style={{ fontSize: "1.3rem", fontWeight: "900", letterSpacing: "-1px" }}>
+            Cogni<span style={{ color: "var(--accent-color)" }}>Track</span>
           </span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-          <span style={{ color: "#00ff99", fontSize: "14px" }}>
-            👋 Welcome, {studentName || "Student"}
-          </span>
-          <button
-            onClick={handleLogout}
-            style={{
-              padding: "8px 20px",
-              borderRadius: "20px",
-              border: "1px solid #ff6b6b",
-              backgroundColor: "transparent",
-              color: "#ff6b6b",
-              fontSize: "14px",
-              cursor: "pointer",
-              fontWeight: "bold",
-            }}
-          >
-            🚪 Logout
-          </button>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div style={{ padding: "30px" }}>
-
-        {/* Welcome Banner */}
-        <div style={{
-          background: "linear-gradient(135deg, rgba(14,165,233,0.3), rgba(0,255,153,0.2))",
-          borderRadius: "16px",
-          padding: "25px 30px",
-          marginBottom: "30px",
-          border: "1px solid rgba(255,255,255,0.15)",
-          backdropFilter: "blur(10px)",
-        }}>
-          <h1 style={{ color: "white", fontSize: "26px", margin: 0 }}>
-            🎓 Student Learning Dashboard
-          </h1>
-          <p style={{ color: "rgba(255,255,255,0.7)", margin: "8px 0 0", fontSize: "14px" }}>
-            Track your learning progress, take quizzes, and improve your skills!
-          </p>
-        </div>
-
-        {/* Topics Section */}
-        <h3 style={{ color: "white", marginBottom: "15px", fontSize: "18px" }}>
-          📚 Select Topic to Learn
-        </h3>
-
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-          gap: "12px",
-          marginBottom: "35px",
-        }}>
-          {topics.map((topic, index) => (
-            <div key={index} style={{
-              backgroundColor: "rgba(255,255,255,0.07)",
-              borderRadius: "12px",
-              border: activeTopics[topic.name]
-                ? `2px solid ${topic.color}`
-                : "1px solid rgba(255,255,255,0.15)",
-              padding: "16px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "10px",
+        <div style={{ display: "flex", alignItems: "center", gap: "25px" }}>
+          <ThemeToggle />
+          <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+            <span style={{ 
+              color: "var(--text-main)", 
+              fontSize: "13px", 
+              fontWeight: "800",
+              textTransform: "uppercase",
+              letterSpacing: "0.5px"
             }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <span style={{ fontSize: "24px" }}>{topic.icon}</span>
-                <div>
-                  <div style={{ color: "white", fontWeight: "bold", fontSize: "16px" }}>
-                    {topic.name}
-                  </div>
-                  <div style={{ color: "rgba(255,255,255,0.5)", fontSize: "12px" }}>
-                    Click to start learning
-                  </div>
-                </div>
-                {activeTopics[topic.name] && (
-                  <span style={{
-                    marginLeft: "auto",
-                    backgroundColor: topic.color,
-                    color: "#000",
-                    padding: "4px 10px",
-                    borderRadius: "20px",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                  }}>
-                    ⏱ {formatTime(timers[topic.name])}
-                  </span>
-                )}
-              </div>
-              <div style={{ display: "flex", gap: "8px" }}>
-                <button
-                  onClick={() => handleTopicClick(topic)}
-                  style={{
-                    flex: 1, padding: "10px", borderRadius: "8px",
-                    border: `1px solid ${topic.color}`, backgroundColor: "transparent",
-                    color: topic.color, fontSize: "13px", fontWeight: "bold", cursor: "pointer",
-                  }}
-                >
-                  📖 Study
-                </button>
-                <button
-                  onClick={() => navigate(`/quiz/${topic.name}`)}
-                  style={{
-                    flex: 1, padding: "10px", borderRadius: "8px",
-                    border: "none", backgroundColor: topic.color,
-                    color: "#000", fontSize: "13px", fontWeight: "bold", cursor: "pointer",
-                  }}
-                >
-                  📝 Quiz
-                </button>
-              </div>
-            </div>
-          ))}
+              {studentName || "Guest User"}
+            </span>
+            <button
+              onClick={handleLogout}
+              style={{
+                padding: "8px 16px",
+                borderRadius: "10px",
+                border: "1px solid var(--border-color)",
+                backgroundColor: "var(--bg-color)",
+                color: "var(--text-main)",
+                fontSize: "12px",
+                cursor: "pointer",
+                fontWeight: "900",
+                transition: "all 0.3s"
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.borderColor = "var(--danger-color)"}
+              onMouseLeave={(e) => e.currentTarget.style.borderColor = "var(--border-color)"}
+            >
+              SIGN OUT
+            </button>
+          </div>
         </div>
+      </nav>
 
-        {/* Analytics Section */}
-        <h3 style={{ color: "white", marginBottom: "15px", fontSize: "18px" }}>
-          📊 Your Learning Analytics
-        </h3>
+      {/* Main Content Area */}
+      <div style={{ padding: "2rem", maxWidth: "1500px", margin: "0 auto" }}>
 
-        {/* Summary Cards */}
+        {/* Analytics Grid - Professional Layout */}
         {analyticsData && (
           <div style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "12px",
-            marginBottom: "25px",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: "1.25rem",
+            marginBottom: "2rem",
           }}>
-            <div style={{
-              backgroundColor: "rgba(14,165,233,0.2)", borderRadius: "12px",
-              padding: "20px", textAlign: "center", border: "1px solid #0EA5E9",
-            }}>
-              <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", margin: 0 }}>⏱ Avg Time Spent</p>
-              <p style={{ color: "#0EA5E9", fontSize: "28px", fontWeight: "bold", margin: "8px 0 0" }}>
-                {analyticsData.avg_time}s
-              </p>
-            </div>
-
-            <div style={{
-              backgroundColor: "rgba(0,255,153,0.15)", borderRadius: "12px",
-              padding: "20px", textAlign: "center", border: "1px solid #00ff99",
-            }}>
-              <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", margin: 0 }}>🎯 Avg Quiz Score</p>
-              <p style={{ color: "#00ff99", fontSize: "28px", fontWeight: "bold", margin: "8px 0 0" }}>
-                {analyticsData.avg_score}%
-              </p>
-            </div>
-
-            <div style={{
-              backgroundColor: "rgba(162,155,254,0.2)", borderRadius: "12px",
-              padding: "20px", textAlign: "center", border: "1px solid #A29BFE",
-            }}>
-              <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", margin: 0 }}>📚 Most Studied</p>
-              <p style={{ color: "#A29BFE", fontSize: "20px", fontWeight: "bold", margin: "8px 0 0" }}>
-                {analyticsData.most_studied}
-              </p>
-            </div>
-
-            <div style={{
-              backgroundColor: "rgba(255,107,107,0.2)", borderRadius: "12px",
-              padding: "20px", textAlign: "center", border: "1px solid #ff6b6b",
-            }}>
-              <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", margin: 0 }}>⚠️ Difficult Topics</p>
-              <p style={{ color: "#ff6b6b", fontSize: "16px", fontWeight: "bold", margin: "8px 0 0" }}>
-                {analyticsData.difficult_topics.length > 0
-                  ? analyticsData.difficult_topics.join(", ")
-                  : "None 🎉"}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Bar Chart */}
-        {analyticsData && analyticsData.topic_stats.length > 0 && (
-          <div style={{
-            backgroundColor: "rgba(255,255,255,0.07)", borderRadius: "16px",
-            padding: "20px", marginBottom: "20px", border: "1px solid rgba(255,255,255,0.1)",
-          }}>
-            <h4 style={{ color: "white", marginBottom: "15px" }}>📊 Time Spent per Topic (seconds)</h4>
-            <Bar
-              data={{
-                labels: analyticsData.topic_stats.map((t) => t.lesson_name),
-                datasets: [{
-                  label: "Time Spent (s)",
-                  data: analyticsData.topic_stats.map((t) => t.total_time),
-                  backgroundColor: analyticsData.topic_stats.map((t) =>
-                    analyticsData.difficult_topics.includes(t.lesson_name)
-                      ? "rgba(255,107,107,0.8)"
-                      : "rgba(14,165,233,0.8)"
-                  ),
-                  borderRadius: 8,
-                }],
-              }}
-              options={{
-                responsive: true,
-                plugins: { legend: { labels: { color: "white" } } },
-                scales: {
-                  x: { ticks: { color: "white" }, grid: { color: "rgba(255,255,255,0.1)" } },
-                  y: { ticks: { color: "white" }, grid: { color: "rgba(255,255,255,0.1)" } },
-                },
-              }}
-            />
-          </div>
-        )}
-
-        {/* Line Chart */}
-        {analyticsData && analyticsData.topic_stats.length > 0 && (
-          <div style={{
-            backgroundColor: "rgba(255,255,255,0.07)", borderRadius: "16px",
-            padding: "20px", marginBottom: "20px", border: "1px solid rgba(255,255,255,0.1)",
-          }}>
-            <h4 style={{ color: "white", marginBottom: "15px" }}>📈 Quiz Score per Topic (%)</h4>
-            <Line
-              data={{
-                labels: analyticsData.topic_stats.map((t) => t.lesson_name),
-                datasets: [{
-                  label: "Quiz Score (%)",
-                  data: analyticsData.topic_stats.map((t) => t.avg_score),
-                  borderColor: "#00ff99",
-                  backgroundColor: "rgba(0,255,153,0.2)",
-                  borderWidth: 2,
-                  pointBackgroundColor: analyticsData.topic_stats.map((t) =>
-                    analyticsData.difficult_topics.includes(t.lesson_name)
-                      ? "#ff6b6b" : "#00ff99"
-                  ),
-                  pointRadius: 6,
-                  tension: 0.4,
-                }],
-              }}
-              options={{
-                responsive: true,
-                plugins: { legend: { labels: { color: "white" } } },
-                scales: {
-                  x: { ticks: { color: "white" }, grid: { color: "rgba(255,255,255,0.1)" } },
-                  y: {
-                    ticks: { color: "white" }, grid: { color: "rgba(255,255,255,0.1)" },
-                    min: 0, max: 100,
-                  },
-                },
-              }}
-            />
-          </div>
-        )}
-
-        {/* Difficult Topics */}
-        {analyticsData && analyticsData.difficult_topics.length > 0 && (
-          <div style={{
-            backgroundColor: "rgba(255,107,107,0.15)", borderRadius: "12px",
-            padding: "20px", border: "1px solid #ff6b6b", marginBottom: "20px",
-          }}>
-            <h4 style={{ color: "#ff6b6b", margin: "0 0 10px" }}>⚠️ Topics Need More Attention:</h4>
-            {analyticsData.difficult_topics.map((topic, i) => (
-              <span key={i} style={{
-                display: "inline-block",
-                backgroundColor: "rgba(255,107,107,0.3)",
-                color: "#ff6b6b", padding: "6px 16px", borderRadius: "20px",
-                marginRight: "8px", marginBottom: "8px", fontSize: "14px", fontWeight: "bold",
+            {[
+              { label: "Velocity", value: `${analyticsData.avg_time}s`, color: "#3b82f6", icon: <IconBolt /> },
+              { label: "Accuracy", value: `${analyticsData.avg_score}%`, color: "#10b981", icon: <IconTarget /> },
+              { label: "Expertise", value: analyticsData.most_studied, color: "#8b5cf6", icon: <IconAward /> },
+              { label: "Alerts", value: analyticsData.difficult_topics.length || "0", color: "#f59e0b", icon: <IconBell /> },
+            ].map((stat, i) => (
+              <div key={i} style={{
+                backgroundColor: "var(--bg-card)",
+                borderRadius: "20px",
+                padding: "1.5rem",
+                border: "1px solid var(--border-color)",
+                boxShadow: "0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01)",
+                display: "flex",
+                flexDirection: "column",
+                gap: "1rem",
+                position: "relative",
+                overflow: "hidden"
               }}>
-                🔴 {topic}
-              </span>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "900", textTransform: "uppercase", letterSpacing: "1px" }}>{stat.label}</div>
+                  <div style={{ color: stat.color, opacity: 0.8 }}>{stat.icon}</div>
+                </div>
+                <div style={{ fontSize: "1.8rem", fontWeight: "900", color: "var(--text-main)", letterSpacing: "-1px" }}>{stat.value}</div>
+                <div style={{ position: "absolute", top: 0, right: 0, width: "100px", height: "100px", background: `radial-gradient(circle at top right, ${stat.color}08, transparent)`, zIndex: 0 }} />
+              </div>
             ))}
           </div>
         )}
 
-        {/* Activity Cards */}
-        {activityData.length === 0 ? (
+        {/* Charts & Insights Grid */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(450px, 1fr))",
+          gap: "1.5rem",
+          marginBottom: "2.5rem",
+        }}>
+          {/* Main Chart Card */}
           <div style={{
-            backgroundColor: "rgba(255,255,255,0.07)", borderRadius: "12px",
-            padding: "30px", textAlign: "center",
+            backgroundColor: "var(--bg-card)", borderRadius: "24px",
+            padding: "2rem", border: "1px solid var(--border-color)",
+            boxShadow: "0 20px 25px -5px rgba(0,0,0,0.02)"
           }}>
-            <p style={{ color: "rgba(255,255,255,0.5)" }}>
-              📭 No activity yet. Start studying!
-            </p>
+            <div style={{ marginBottom: "2rem" }}>
+              <div style={{ fontSize: "11px", fontWeight: "900", color: "var(--accent-color)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Performance Metrics</div>
+              <h4 style={{ fontWeight: "900", fontSize: "1.4rem", margin: 0 }}>Accuracy Growth</h4>
+            </div>
+            {analyticsData && analyticsData.topic_stats.length > 0 ? (
+              <div style={{ height: "320px" }}>
+                <Line
+                  data={{
+                    labels: analyticsData.topic_stats.map((t) => t.lesson_name),
+                    datasets: [{
+                      label: "Accuracy %",
+                      data: analyticsData.topic_stats.map((t) => t.avg_score),
+                      borderColor: "#3b82f6",
+                      backgroundColor: "rgba(59, 130, 246, 0.03)",
+                      borderWidth: 4,
+                      tension: 0.4,
+                      fill: true,
+                      pointRadius: 0,
+                      pointHoverRadius: 6,
+                      pointHoverBackgroundColor: "#3b82f6",
+                      pointHoverBorderColor: "white",
+                      pointHoverBorderWidth: 3,
+                    }],
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                      legend: { display: false },
+                      tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: '#1e293b',
+                        padding: 12,
+                        cornerRadius: 8,
+                        titleFont: { size: 12, weight: 'bold' }
+                      }
+                    },
+                    scales: {
+                      x: { ticks: { color: "var(--text-muted)", font: { size: 10, weight: '700' } }, grid: { display: false } },
+                      y: { ticks: { color: "var(--text-muted)", font: { size: 10 } }, min: 0, max: 100, grid: { color: 'rgba(0,0,0,0.03)' } }
+                    }
+                  }}
+                />
+              </div>
+            ) : <div style={{ height: "320px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", fontStyle: "italic" }}>Awaiting Data Stream...</div>}
           </div>
-        ) : (
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+            {/* Efficiency Box */}
+            <div style={{
+              backgroundColor: "var(--bg-card)", borderRadius: "24px",
+              padding: "2rem", border: "1px solid var(--border-color)",
+              flex: 1
+            }}>
+              <div style={{ marginBottom: "1.5rem" }}>
+                <div style={{ fontSize: "11px", fontWeight: "900", color: "#10b981", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Resource Focus</div>
+                <h4 style={{ fontWeight: "900", fontSize: "1.2rem", margin: 0 }}>Engagement by Domain</h4>
+              </div>
+              {analyticsData && analyticsData.topic_stats.length > 0 ? (
+                <div style={{ height: "230px" }}>
+                  <Bar
+                    data={{
+                      labels: analyticsData.topic_stats.map((t) => t.lesson_name),
+                      datasets: [{
+                        label: "Seconds spent",
+                        data: analyticsData.topic_stats.map((t) => t.total_time),
+                        backgroundColor: "#10b981",
+                        borderRadius: 8,
+                        barThickness: 10,
+                      }],
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: { legend: { display: false } },
+                      scales: {
+                        x: { ticks: { color: "var(--text-muted)", font: { size: 10 } }, grid: { display: false } },
+                        y: { ticks: { color: "var(--text-muted)", font: { size: 10 } }, grid: { borderDash: [5, 5] } }
+                      }
+                    }}
+                  />
+                </div>
+              ) : <div style={{ height: "230px" }} />}
+            </div>
+
+            {/* Action Card */}
+            {analyticsData && (
+              <div style={{
+                background: "var(--accent-gradient)",
+                borderRadius: "24px",
+                padding: "1.5rem 2rem",
+                color: "white",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center"
+              }}>
+                <div>
+                  <div style={{ fontSize: "12px", opacity: 0.8, fontWeight: "700", textTransform: "uppercase", marginBottom: "4px" }}>Recommendation</div>
+                  <h5 style={{ margin: 0, fontSize: "1.1rem", fontWeight: "900" }}>Focus on {analyticsData.difficult_topics[0] || "Foundations"}</h5>
+                </div>
+                <button style={{ backgroundColor: "white", color: "var(--accent-color)", border: "none", padding: "10px 20px", borderRadius: "12px", fontWeight: "900", fontSize: "12px" }}>START SESSION</button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Modules Library - Professional Grid */}
+        <div style={{ marginBottom: "5rem" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "2rem" }}>
+            <div>
+              <div style={{ fontSize: "11px", fontWeight: "900", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Catalog Overview</div>
+              <h3 style={{ fontWeight: "950", fontSize: "1.8rem", margin: 0, letterSpacing: "-0.5px" }}>Curriculum <span style={{ color: "var(--accent-color)" }}>Modules</span></h3>
+            </div>
+            <div style={{ padding: "8px 16px", backgroundColor: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: "10px", fontSize: "12px", fontWeight: "700" }}>
+              Total Units: {topics.length}
+            </div>
+          </div>
+          
           <div style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-            gap: "12px",
+            gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+            gap: "1.25rem",
           }}>
-            {activityData.map((item, index) => {
-              const score = parseFloat(item.quiz_score) || 0;
-              const topicInfo = topics.find((t) => t.name === item.topic);
-              const color = topicInfo ? topicInfo.color : "#0EA5E9";
-              const isDifficult = analyticsData?.difficult_topics?.includes(item.topic);
-
-              return (
-                <div key={index} style={{
-                  backgroundColor: isDifficult ? "rgba(255,107,107,0.1)" : "rgba(255,255,255,0.07)",
-                  borderRadius: "12px", padding: "20px",
-                  border: isDifficult ? "1px solid #ff6b6b" : `1px solid ${color}40`,
-                }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "15px" }}>
-                    <span style={{ fontSize: "20px" }}>{topicInfo ? topicInfo.icon : "📖"}</span>
-                    <span style={{ color: "white", fontWeight: "bold", fontSize: "16px" }}>{item.topic}</span>
-                    {isDifficult && (
-                      <span style={{ marginLeft: "auto", color: "#ff6b6b", fontSize: "12px" }}>⚠️ Needs Work</span>
-                    )}
+            {topics.map((topic, index) => (
+              <div key={index} style={{
+                backgroundColor: "var(--bg-card)",
+                borderRadius: "20px",
+                border: "1px solid var(--border-color)",
+                padding: "1.5rem",
+                display: "flex",
+                flexDirection: "column",
+                gap: "1.5rem",
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+                position: "relative"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-5px)";
+                e.currentTarget.style.borderColor = "var(--accent-color)";
+                e.currentTarget.style.boxShadow = "0 20px 25px -5px rgba(0,0,0,0.05)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.borderColor = "var(--border-color)";
+                e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.02)";
+              }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+                  <div style={{ 
+                    width: "48px", height: "48px", 
+                    backgroundColor: "var(--bg-color)", 
+                    borderRadius: "14px", 
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: "22px",
+                    border: "1px solid var(--border-color)"
+                  }}>
+                    {topic.icon}
                   </div>
-
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                    <span style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px" }}>⏱ Time</span>
-                    <span style={{ color: color, fontWeight: "bold", fontSize: "13px" }}>
-                      {formatTime(item.time_spent)}
-                    </span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: "900", fontSize: "1.05rem", color: "var(--text-main)" }}>{topic.name}</div>
+                    <div style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: "600" }}>Standardized Core</div>
                   </div>
-
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
-                    <span style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px" }}>🎯 Score</span>
-                    <span style={{ color: score >= 60 ? "#00ff99" : "#ff6b6b", fontWeight: "bold", fontSize: "13px" }}>
-                      {score > 0 ? `${score}%` : "Not taken"}
-                    </span>
-                  </div>
-
-                  {score > 0 && (
-                    <div style={{ backgroundColor: "rgba(255,255,255,0.1)", borderRadius: "10px", height: "6px" }}>
-                      <div style={{
-                        width: `${score}%`, height: "100%",
-                        backgroundColor: score >= 60 ? "#00ff99" : "#ff6b6b",
-                        borderRadius: "10px",
-                      }} />
-                    </div>
-                  )}
                 </div>
-              );
-            })}
+
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <button
+                    onClick={() => handleTopicClick(topic)}
+                    style={{
+                      flex: 1.2, padding: "12px", borderRadius: "12px",
+                      border: "none", backgroundColor: "var(--accent-color)",
+                      color: "white", fontSize: "12px", fontWeight: "900",
+                      boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)"
+                    }}
+                  >LAUNCH MODULE</button>
+                  <button
+                    onClick={() => hasQuiz(topic.name) ? navigate(`/quiz/${topic.name}`) : showToast("Quiz Locked", "error")}
+                    style={{
+                      flex: 1, padding: "12px", borderRadius: "12px",
+                      border: "1px solid var(--border-color)", backgroundColor: "var(--bg-color)",
+                      color: "var(--text-main)", fontSize: "11px", fontWeight: "800",
+                    }}
+                  >TEST SKILLS</button>
+                </div>
+
+                {activeTopics[topic.name] && (
+                  <div style={{
+                    position: "absolute", top: "15px", right: "15px",
+                    display: "flex", alignItems: "center", gap: "6px",
+                    backgroundColor: "#eff6ff", color: "#3b82f6", padding: "4px 10px",
+                    borderRadius: "50px", fontSize: "10px", fontWeight: "900"
+                  }}>
+                    <span style={{ width: "6px", height: "6px", backgroundColor: "#3b82f6", borderRadius: "50%", animation: "pulse 1.5s infinite" }} />
+                    {formatTime(timers[topic.name])}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
-        )}
+        </div>
+
       </div>
     </div>
   );

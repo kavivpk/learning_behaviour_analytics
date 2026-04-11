@@ -1,134 +1,56 @@
 export const quizData = {
   react: [
-    {
-      question: "What is React primarily used for?",
-      options: ["Building databases", "Building user interfaces", "Routing", "Styling components"],
-      answer: 1
-    },
-    {
-      question: "What syntax extension to JavaScript is typically used with React?",
-      options: ["TSX", "JS++", "JSX", "HTMLx"],
-      answer: 2
-    },
-    {
-      question: "In React, what are isolated pieces of code that build the UI called?",
-      options: ["Modules", "Templates", "Functions", "Components"],
-      answer: 3
-    }
+    { question: "What is React primarily used for?", options: ["Building databases", "Building user interfaces", "Routing", "Styling components"], answer: 1, level: 1, focus: "Architecture" },
+    { question: "What syntax extension to JavaScript is typically used with React?", options: ["TSX", "JS++", "JSX", "HTMLx"], answer: 2, level: 1, focus: "Syntax" },
+    { question: "In React, what are isolated pieces of code that build the UI called?", options: ["Modules", "Templates", "Functions", "Components"], answer: 3, level: 2, focus: "Reusability" },
+    { question: "Which hook is used to manage state in a functional component?", options: ["useEffect", "useContext", "useState", "useReducer"], answer: 2, level: 3, focus: "Hooks" }
   ],
   python: [
-    {
-      question: "Who created Python?",
-      options: ["Guido van Rossum", "James Gosling", "Dennis Ritchie", "Bjarne Stroustrup"],
-      answer: 0
-    },
-    {
-      question: "In what year was Python released?",
-      options: ["1989", "1991", "1995", "2000"],
-      answer: 1
-    },
-    {
-      question: "Which of the following does Python use to complete a command/scope?",
-      options: ["Semicolons", "Curly braces", "Parentheses", "New lines and indentation"],
-      answer: 3
-    }
-  ]
+    { question: "Who created Python?", options: ["Guido van Rossum", "James Gosling", "Dennis Ritchie", "Bjarne Stroustrup"], answer: 0, level: 1, focus: "History" },
+    { question: "In what year was Python released?", options: ["1989", "1991", "1995", "2000"], answer: 1, level: 1, focus: "History" },
+    { question: "Which of the following does Python use to define scope?", options: ["Semicolons", "Curly braces", "Parentheses", "Indentation"], answer: 3, level: 2, focus: "Syntax" },
+    { question: "Which keyword is used to create a function in Python?", options: ["function", "def", "func", "define"], answer: 1, level: 2, focus: "Logic" }
+  ],
   C: [
-    { question: "What is C language?", options: ["High level", "Low level", "Middle level", "None"], answer: "Middle level" },
-    { question: "Which symbol ends a statement in C?", options: [".", ":", ";", ","], answer: ";" },
-    { question: "What is printf() used for?", options: ["Input", "Output", "Both", "None"], answer: "Output" },
-    { question: "Which header file is used for printf?", options: ["stdlib.h", "math.h", "stdio.h", "string.h"], answer: "stdio.h" },
-    { question: "What does int mean in C?", options: ["String", "Integer", "Float", "Boolean"], answer: "Integer" },
+    { question: "What is C language?", options: ["High level", "Low level", "Middle level", "None"], answer: 2, level: 1, focus: "Fundamentals" },
+    { question: "Which symbol ends a statement in C?", options: [".", ":", ";", ","], answer: 2, level: 1, focus: "Syntax" },
   ],
   "C++": [
-    { question: "C++ is an extension of?", options: ["Java", "Python", "C", "Ruby"], answer: "C" },
-    { question: "Which concept is NOT in C++?", options: ["Inheritance", "Polymorphism", "Pointers", "Garbage Collection"], answer: "Garbage Collection" },
-    { question: "What is cout used for?", options: ["Input", "Output", "Loop", "Condition"], answer: "Output" },
-    { question: "Which keyword defines a class?", options: ["struct", "class", "object", "define"], answer: "class" },
-    { question: "What is OOP?", options: ["Object Oriented Programming", "Open Output Program", "Online Object Processing", "None"], answer: "Object Oriented Programming" },
+    { question: "C++ is an extension of?", options: ["Java", "Python", "C", "Ruby"], answer: 2, level: 1, focus: "History" },
+    { question: "Which concept is NOT in C++?", options: ["Inheritance", "Polymorphism", "Pointers", "Garbage Collection"], answer: 3, level: 2, focus: "Memory Management" },
   ],
-  Java: [
-    { question: "Java is platform independent because of?", options: ["JDK", "JVM", "JRE", "IDE"], answer: "JVM" },
-    { question: "Which keyword creates an object?", options: ["create", "object", "new", "make"], answer: "new" },
-    { question: "What is System.out.println()?", options: ["Input", "Output", "Loop", "Class"], answer: "Output" },
-    { question: "Java file extension is?", options: [".js", ".java", ".jav", ".j"], answer: ".java" },
-    { question: "Which is not a Java feature?", options: ["OOP", "Platform Independent", "Pointers", "Multithreading"], answer: "Pointers" },
+  DBMS: [
+    { question: "What does DBMS stand for?", options: ["Database Management System", "Data Base Main System", "Digital Backup Mode", "None"], answer: 0, level: 1, focus: "Infrastructure" },
+    { question: "Which of these is a relational database?", options: ["MongoDB", "Redis", "MySQL", "Cassandra"], answer: 2, level: 2, focus: "Relational Mapping" },
+    { question: "Which key uniquely identifies a record?", options: ["Foreign Key", "Super Key", "Primary Key", "Candidate Key"], answer: 2, level: 2, focus: "Integrity" },
   ],
-  PHP: [
-    { question: "PHP stands for?", options: ["Personal Home Page", "Hypertext Preprocessor", "Both A and B", "None"], answer: "Both A and B" },
-    { question: "PHP file extension?", options: [".html", ".php", ".py", ".js"], answer: ".php" },
-    { question: "Which symbol starts PHP code?", options: ["<?php", "<php", "<?", "#php"], answer: "<?php" },
-    { question: "Which function outputs text in PHP?", options: ["print()", "echo()", "Both", "output()"], answer: "Both" },
-    { question: "PHP runs on?", options: ["Client side", "Server side", "Both", "None"], answer: "Server side" },
+  "Data Structures": [
+    { question: "Which structure follows LIFO?", options: ["Queue", "Stack", "Tree", "Graph"], answer: 1, level: 1, focus: "Memory Logic" },
+    { question: "Which structure is best for hierarchical data?", options: ["Array", "Linked List", "Tree", "Stack"], answer: 2, level: 2, focus: "Hierarchy" },
+    { question: "Time complexity of searching in a BST (balanced)?", options: ["O(1)", "O(n)", "O(log n)", "O(n^2)"], answer: 2, level: 3, focus: "Optimization" },
+  ],
+  DSA: [
+    { question: "Which algorithm uses Divide and Conquer?", options: ["Bubble Sort", "Merge Sort", "Insertion Sort", "Selection Sort"], answer: 1, level: 2, focus: "Algorithms" },
+    { question: "What is the space complexity of an array of size n?", options: ["O(1)", "O(n)", "O(log n)", "O(n^2)"], answer: 1, level: 1, focus: "Complexity" },
+  ],
+  Cybersecurity: [
+    { question: "What does 'CIA' triad stand for in security?", options: ["Central Intelligence Agency", "Confidentiality, Integrity, Availability", "Code, Input, Access", "None"], answer: 1, level: 1, focus: "Principles" },
+    { question: "Which attack floods a system with traffic?", options: ["Phishing", "SQL Injection", "DDoS", "Man-in-the-middle"], answer: 2, level: 2, focus: "Attacks" },
+  ],
+  "Data Science": [
+    { question: "Which library is used for data manipulation in Python?", options: ["NumPy", "Pandas", "Matplotlib", "Scikit-learn"], answer: 1, level: 2, focus: "Tooling" },
+    { question: "What is 'Mean' in statistics?", options: ["Middle value", "Most frequent value", "Average value", "Difference between max and min"], answer: 2, level: 1, focus: "Stats" },
+  ],
+  NumPy: [
+    { question: "In NumPy, what is an array called?", options: ["List", "ndarray", "Collection", "Vector"], answer: 1, level: 1, focus: "Arrays" },
+    { question: "Which method creates a range of numbers?", options: ["arrange", "arange", "range", "linspace"], answer: 1, level: 2, focus: "Creation" },
   ],
   SQL: [
-    { question: "SQL stands for?", options: ["Structured Query Language", "Simple Query Logic", "System Query Language", "None"], answer: "Structured Query Language" },
-    { question: "Which command retrieves data?", options: ["INSERT", "UPDATE", "SELECT", "DELETE"], answer: "SELECT" },
-    { question: "Which command adds new data?", options: ["SELECT", "INSERT", "UPDATE", "DROP"], answer: "INSERT" },
-    { question: "Which command removes a table?", options: ["DELETE", "REMOVE", "DROP", "CLEAR"], answer: "DROP" },
-    { question: "PRIMARY KEY allows?", options: ["Duplicates", "Null values", "Unique values only", "Both A and B"], answer: "Unique values only" },
+    { question: "Which keyword removes duplicates from search results?", options: ["UNIQUE", "DISTINCT", "ONLY", "SINGLE"], answer: 1, level: 2, focus: "Queries" },
+    { question: "Which clause groups the results?", options: ["GROUP BY", "ORDER BY", "WHERE", "JOIN"], answer: 0, level: 2, focus: "Aggregation" },
   ],
   JavaScript: [
-    { question: "JavaScript runs on?", options: ["Server", "Browser", "Both", "None"], answer: "Both" },
-    { question: "Which keyword declares a variable?", options: ["var", "let", "const", "All of these"], answer: "All of these" },
-    { question: "How to write a comment in JS?", options: ["<!-- -->", "//", "#", "/* only"], answer: "//" },
-    { question: "Which method adds to an array?", options: ["push()", "add()", "append()", "insert()"], answer: "push()" },
-    { question: "What does DOM stand for?", options: ["Document Object Model", "Data Object Model", "Document Oriented Model", "None"], answer: "Document Object Model" },
-  ],
-  HTML: [
-    { question: "HTML stands for?", options: ["Hyper Text Markup Language", "High Text Machine Language", "Hyper Transfer Markup Language", "None"], answer: "Hyper Text Markup Language" },
-    { question: "Which tag creates a heading?", options: ["<head>", "<h1>", "<heading>", "<title>"], answer: "<h1>" },
-    { question: "Which tag creates a link?", options: ["<link>", "<a>", "<href>", "<url>"], answer: "<a>" },
-    { question: "Which tag creates an image?", options: ["<image>", "<img>", "<src>", "<pic>"], answer: "<img>" },
-    { question: "HTML file extension?", options: [".htm only", ".html only", ".both", ".web"], answer: ".both" },
-  ],
-  CSS: [
-    { question: "CSS stands for?", options: ["Cascading Style Sheets", "Computer Style Sheets", "Creative Style System", "None"], answer: "Cascading Style Sheets" },
-    { question: "Which property changes text color?", options: ["font-color", "text-color", "color", "foreground"], answer: "color" },
-    { question: "Which property adds space inside element?", options: ["margin", "padding", "border", "spacing"], answer: "padding" },
-    { question: "How to make text bold in CSS?", options: ["font-weight: bold", "text-bold: true", "bold: yes", "font-style: bold"], answer: "font-weight: bold" },
-    { question: "Which selector selects by class?", options: ["#class", ".class", "*class", "@class"], answer: ".class" },
-  ],
-  "Node.js": [
-    { question: "Node.js is built on?", options: ["Python", "V8 Engine", "Java VM", "Ruby"], answer: "V8 Engine" },
-    { question: "Node.js is used for?", options: ["Frontend", "Backend", "Both", "Database"], answer: "Backend" },
-    { question: "Which command runs a Node file?", options: ["run", "node", "start", "execute"], answer: "node" },
-    { question: "npm stands for?", options: ["Node Package Manager", "New Program Method", "Node Program Module", "None"], answer: "Node Package Manager" },
-    { question: "Which module handles files in Node?", options: ["http", "path", "fs", "os"], answer: "fs" },
-  ],
-  MongoDB: [
-    { question: "MongoDB stores data as?", options: ["Tables", "JSON documents", "XML", "CSV"], answer: "JSON documents" },
-    { question: "MongoDB is what type of database?", options: ["SQL", "NoSQL", "Graph", "None"], answer: "NoSQL" },
-    { question: "Which command inserts in MongoDB?", options: ["insert()", "insertOne()", "add()", "push()"], answer: "insertOne()" },
-    { question: "MongoDB collection is similar to SQL?", options: ["Row", "Column", "Table", "Database"], answer: "Table" },
-    { question: "Which command finds documents?", options: ["search()", "find()", "get()", "select()"], answer: "find()" },
-  ],
-  TypeScript: [
-    { question: "TypeScript is a superset of?", options: ["Java", "Python", "JavaScript", "C#"], answer: "JavaScript" },
-    { question: "TypeScript file extension?", options: [".js", ".ts", ".tsx", "Both .ts and .tsx"], answer: "Both .ts and .tsx" },
-    { question: "Which keyword defines a type?", options: ["type", "interface", "Both", "define"], answer: "Both" },
-    { question: "TypeScript is compiled to?", options: ["Python", "Java", "JavaScript", "Binary"], answer: "JavaScript" },
-    { question: "Who created TypeScript?", options: ["Google", "Facebook", "Microsoft", "Apple"], answer: "Microsoft" },
-  ],
-  Git: [
-    { question: "Git is used for?", options: ["Database management", "Version control", "Web hosting", "Testing"], answer: "Version control" },
-    { question: "Which command initializes a repo?", options: ["git start", "git init", "git begin", "git create"], answer: "git init" },
-    { question: "Which command saves changes?", options: ["git save", "git push", "git commit", "git add"], answer: "git commit" },
-    { question: "Which command uploads to remote?", options: ["git upload", "git push", "git send", "git commit"], answer: "git push" },
-    { question: "Which command downloads changes?", options: ["git download", "git fetch", "git pull", "git get"], answer: "git pull" },
-  ],
-  "Power BI": [
-    { question: "Power BI is made by?", options: ["Google", "Microsoft", "Apple", "IBM"], answer: "Microsoft" },
-    { question: "Power BI is used for?", options: ["Coding", "Data Visualization", "Web Development", "Gaming"], answer: "Data Visualization" },
-    { question: "What is DAX in Power BI?", options: ["Data Analysis Expressions", "Dynamic Array Extension", "Data Access XML", "None"], answer: "Data Analysis Expressions" },
-    { question: "Power BI Desktop file extension?", options: [".pbi", ".pbix", ".powerbi", ".xlsx"], answer: ".pbix" },
-    { question: "What is a slicer in Power BI?", options: ["Chart type", "Filter tool", "Data source", "Report page"], answer: "Filter tool" },
-  ],
-  Excel: [
-    { question: "Excel is made by?", options: ["Google", "Apple", "Microsoft", "IBM"], answer: "Microsoft" },
-    { question: "Which symbol starts a formula?", options: ["#", "@", "=", "$"], answer: "=" },
-    { question: "Which function adds numbers?", options: ["ADD()", "PLUS()", "SUM()", "TOTAL()"], answer: "SUM()" },
-    { question: "Excel file extension?", options: [".doc", ".xls", ".xlsx", "Both .xls and .xlsx"], answer: "Both .xls and .xlsx" },
-    { question: "VLOOKUP is used for?", options: ["Chart creation", "Searching data", "Sorting", "Filtering"], answer: "Searching data" },
-  ],
+    { question: "What is 'Hoisting'?", options: ["Moving declarations to top", "Lifting page content", "Variable deletion", "None"], answer: 0, level: 3, focus: "Runtime" },
+    { question: "Which function executes after a delay?", options: ["setInterval", "setTimeout", "setWait", "delay"], answer: 1, level: 2, focus: "Async" },
+  ]
 };
