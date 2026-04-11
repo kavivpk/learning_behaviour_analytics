@@ -86,6 +86,10 @@ export default function QuizPage() {
           if (matched) {
             setSelectedTopic(matched.name);
             setTopicTime(matched.time);
+          } else {
+            // Force initialize even if no study time recorded yet
+            setSelectedTopic(name);
+            setTopicTime(0);
           }
         }
       })
@@ -143,6 +147,14 @@ export default function QuizPage() {
     } catch {
       setToast({ message: "Failed to sync progress", type: "error" });
     }
+  };
+
+  const formatTime = (seconds) => {
+    const s = Number(seconds) || 0;
+    if (s < 60) return `${s}s`;
+    const mins = Math.floor(s / 60);
+    const secs = s % 60;
+    return `${mins}m ${secs}s`;
   };
 
   if (loading || processing) {
@@ -244,64 +256,66 @@ export default function QuizPage() {
                 </button>
               </div>
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+                gap: "1.5rem",
+              }}>
                 {studiedTopics.map((topic) => {
-                  const unlockedCount = (getTopicQuestions(topic.name) || []).filter(q => {
+                  const allQs = getTopicQuestions(topic.name);
+                  const unlockedCount = allQs.filter(q => {
                     const level = q.level || 1;
-                    if (level === 1) return topic.time >= 10;
-                    if (level === 2) return topic.time >= 60;
-                    if (level >= 3) return topic.time >= 180;
+                    if (level === 1) return (Number(topic.time) || 0) >= 10;
+                    if (level === 2) return (Number(topic.time) || 0) >= 60;
+                    if (level >= 3) return (Number(topic.time) || 0) >= 180;
                     return true;
                   }).length;
 
+                  const totalAvailable = allQs.length || 0;
+
                   return (
-                    <div
+                    <div 
                       key={topic.name}
-                      style={{
-                        padding: "1.5rem", 
-                        backgroundColor: "var(--bg-surface)", 
-                        borderRadius: "20px",
-                        border: "1px solid var(--border-color)", 
-                        cursor: unlockedCount > 0 ? "pointer" : "not-allowed",
-                        textAlign: "left", 
-                        transition: "all 0.3s",
-                        boxShadow: "var(--shadow-sm)",
-                        position: "relative",
-                        opacity: unlockedCount > 0 ? 1 : 0.6
-                      }}
+                      onClick={() => startQuiz(topic)}
                       onMouseEnter={(e) => {
-                        if (unlockedCount > 0) {
-                          e.currentTarget.style.transform = "translateY(-5px)";
-                          e.currentTarget.style.borderColor = "var(--accent-color)";
-                        }
+                        e.currentTarget.style.transform = "translateY(-8px)";
+                        e.currentTarget.style.borderColor = "var(--accent-color)";
+                        e.currentTarget.style.boxShadow = "0 20px 40px rgba(59, 130, 246, 0.15)";
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.transform = "translateY(0)";
                         e.currentTarget.style.borderColor = "var(--border-color)";
+                        e.currentTarget.style.boxShadow = "var(--shadow-sm)";
                       }}
-                      onClick={() => unlockedCount > 0 ? startQuiz(topic) : setToast({ message: "Keep studying to unlock questions!", type: "warning" })}
+                      style={{
+                        padding: "2.5rem 2rem", backgroundColor: "var(--bg-card)",
+                        borderRadius: "24px", border: "2px solid var(--border-color)",
+                        cursor: "pointer", transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                        display: "flex", flexDirection: "column", gap: "1.5rem",
+                        boxShadow: "var(--shadow-sm)", position: "relative",
+                        overflow: "hidden"
+                      }}
                     >
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem" }}>
-                        <div style={{ 
-                          width: "32px", height: "32px", backgroundColor: "var(--bg-color)", 
-                          borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center",
-                          fontSize: "16px"
-                        }}>
-                          {unlockedCount > 0 ? "🔥" : "🔒"}
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div style={{ padding: "10px", backgroundColor: "var(--bg-color)", borderRadius: "12px", fontSize: "24px" }}>
+                           🔥
                         </div>
-                        <div style={{ fontSize: "10px", fontWeight: "900", color: "var(--accent-color)", textTransform: "uppercase" }}>
+                        <div style={{ fontSize: "11px", fontWeight: "900", color: "var(--accent-color)", textTransform: "uppercase" }}>
                           {topic.time}s Session
                         </div>
                       </div>
-                      <strong style={{ display: "block", fontSize: "1.1rem", fontWeight: "900", marginBottom: "4px" }}>{topic.name}</strong>
-                      <div style={{ color: "var(--text-muted)", fontSize: "12px", fontWeight: "700" }}>
-                        {unlockedCount} / {getTopicQuestions(topic.name).length} Questions Unlocked
-                      </div>
                       
-                      <div style={{ marginTop: "1rem", height: "4px", backgroundColor: "var(--border-color)", borderRadius: "10px", overflow: "hidden" }}>
+                      <div>
+                        <h3 style={{ margin: "0 0 5px 0", fontSize: "1.5rem", fontWeight: "900", letterSpacing: "-0.5px" }}>{topic.name}</h3>
+                        <div style={{ fontSize: "13px", color: "var(--text-secondary)", fontWeight: "700" }}>
+                          {unlockedCount} / {totalAvailable} Insights Unlocked
+                        </div>
+                      </div>
+
+                      <div style={{ width: "100%", height: "6px", backgroundColor: "var(--bg-color)", borderRadius: "10px", overflow: "hidden" }}>
                         <div style={{ 
-                          width: `${(unlockedCount / getTopicQuestions(topic.name).length) * 100}%`,
-                          height: "100%", backgroundColor: "var(--accent-color)"
+                          width: `${(unlockedCount / (totalAvailable || 1)) * 100}%`, 
+                          height: "100%", backgroundColor: "var(--accent-color)", transition: "width 1s" 
                         }} />
                       </div>
                     </div>

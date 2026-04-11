@@ -101,7 +101,7 @@ function Dashboard() {
 
   // Get current theme text color for charts
   const getThemeTextColor = () => {
-    return localStorage.getItem("theme") === "light" ? "#475569" : "rgba(255,255,255,0.7)";
+    return localStorage.getItem("theme") === "light" ? "#475569" : "#f8fafc";
   };
 
   const showToast = (message, type) => {
@@ -357,8 +357,8 @@ function Dashboard() {
                       }
                     },
                     scales: {
-                      x: { ticks: { color: "var(--text-muted)", font: { size: 10, weight: '700' } }, grid: { display: false } },
-                      y: { ticks: { color: "var(--text-muted)", font: { size: 10 } }, min: 0, max: 100, grid: { color: 'rgba(0,0,0,0.03)' } }
+                      x: { ticks: { color: getThemeTextColor(), font: { size: 10, weight: '700' } }, grid: { display: false } },
+                      y: { ticks: { color: getThemeTextColor(), font: { size: 10 } }, min: 0, max: 100, grid: { color: 'rgba(255,255,255,0.05)' } }
                     }
                   }}
                 />
@@ -395,8 +395,8 @@ function Dashboard() {
                       maintainAspectRatio: false,
                       plugins: { legend: { display: false } },
                       scales: {
-                        x: { ticks: { color: "var(--text-muted)", font: { size: 10 } }, grid: { display: false } },
-                        y: { ticks: { color: "var(--text-muted)", font: { size: 10 } }, grid: { borderDash: [5, 5] } }
+                        x: { ticks: { color: getThemeTextColor(), font: { size: 10 } }, grid: { display: false } },
+                        y: { ticks: { color: getThemeTextColor(), font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)', borderDash: [5, 5] } }
                       }
                     }}
                   />

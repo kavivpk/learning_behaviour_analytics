@@ -52,5 +52,14 @@ export const quizData = {
   JavaScript: [
     { question: "What is 'Hoisting'?", options: ["Moving declarations to top", "Lifting page content", "Variable deletion", "None"], answer: 0, level: 3, focus: "Runtime" },
     { question: "Which function executes after a delay?", options: ["setInterval", "setTimeout", "setWait", "delay"], answer: 1, level: 2, focus: "Async" },
+  ],
+  HTML: [
+    { question: "HTML stands for?", options: ["Hyper Text Markup Language", "High Text Machine Language", "Hyper Transfer Markup Language", "None"], answer: 0, level: 1, focus: "Fundamentals" },
+    { question: "Which tag creates a heading?", options: ["<head>", "<h1>", "<heading>", "<title>"], answer: 1, level: 1, focus: "Tags" },
+    { question: "What is the purpose of the <a> tag?", options: ["Table", "Link", "Image", "Paragraph"], answer: 1, level: 1, focus: "Navigation" }
+  ],
+  CSS: [
+    { question: "CSS stands for?", options: ["Cascading Style Sheets", "Computer Style Sheets", "Creative Style System", "None"], answer: 0, level: 1, focus: "Styling" },
+    { question: "Which property changes text color?", options: ["font-color", "text-color", "color", "foreground"], answer: 2, level: 1, focus: "Visuals" }
   ]
 };
