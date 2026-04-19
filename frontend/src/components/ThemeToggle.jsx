@@ -1,6 +1,5 @@
 
 import React, { useEffect, useState } from "react";
-import 'bootstrap-icons/font/bootstrap-icons.css';
 
 const ThemeToggle = () => {
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
@@ -18,13 +17,13 @@ const ThemeToggle = () => {
     <button onClick={toggleTheme} className="theme-toggle-btn">
       {theme === "dark" ? (
         <>
-          <i className="bi bi-sun-fill" style={{ color: "#FFD43B" }}></i>
-          <span>Light Mode</span>
+          <span>○</span>
+          <span>Light</span>
         </>
       ) : (
         <>
-          <i className="bi bi-moon-stars-fill" style={{ color: "#A29BFE" }}></i>
-          <span>Dark Mode</span>
+          <span>●</span>
+          <span>Dark</span>
         </>
       )}
     </button>

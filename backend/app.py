@@ -2,13 +2,24 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from db import get_db_connection
 from analytics import get_analytics
+from groq import Groq
+import os
+import json
+import re
+from dotenv import load_dotenv
+
+load_dotenv()
+groq_api_key = os.environ.get("GROQ_API_KEY")
+client = None
+if groq_api_key:
+    client = Groq(api_key=groq_api_key)
 
 app = Flask(__name__)
 CORS(app)
 
 @app.route("/")
 def home():
-    return "Web Analyzes Backend Running"
+    return "Learning Behavior Analytics Backend (Groq Powered) Running"
 
 @app.route('/api/register', methods=['POST'])
 def register():
@@ -34,11 +45,7 @@ def register():
     cursor.close()
     conn.close()
 
-    return jsonify({
-        "success": True,
-        "user_id": new_user_id,
-        "name": name
-    })
+    return jsonify({"success": True, "user_id": new_user_id, "name": name})
 
 @app.route('/api/login', methods=['POST'])
 def login():
@@ -48,10 +55,7 @@ def login():
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute(
-        "SELECT id, name FROM users WHERE email=%s AND password=%s",
-        (email, password)
-    )
+    cursor.execute("SELECT id, name FROM users WHERE email=%s AND password=%s", (email, password))
     user = cursor.fetchone()
     cursor.close()
     conn.close()
@@ -79,10 +83,7 @@ def track_activity():
 
         if existing:
             new_time = existing[1] + time_spent
-            cursor.execute(
-                "UPDATE activity SET time_spent=%s WHERE id=%s",
-                (new_time, existing[0])
-            )
+            cursor.execute("UPDATE activity SET time_spent=%s WHERE id=%s", (new_time, existing[0]))
         else:
             cursor.execute(
                 "INSERT INTO activity (user_id, lesson_name, time_spent) VALUES (%s, %s, %s)",
@@ -92,31 +93,9 @@ def track_activity():
         conn.commit()
         cursor.close()
         conn.close()
-        return jsonify({"message": "Activity saved!"}), 200
-
+        return jsonify({"message": "Activity tracked!"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-@app.route('/api/activity/<int:student_id>', methods=['GET'])
-def get_activity(student_id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute(
-        "SELECT lesson_name, time_spent, quiz_score FROM activity WHERE user_id=%s",
-        (student_id,)
-    )
-    rows = cursor.fetchall()
-    cursor.close()
-    conn.close()
-
-    data = []
-    for row in rows:
-        data.append({
-            "topic": row[0],
-            "time_spent": row[1],
-            "quiz_score": str(row[2]),
-        })
-    return jsonify(data)
 
 @app.route('/api/quiz_score', methods=['POST'])
 def save_quiz_score():
@@ -135,10 +114,7 @@ def save_quiz_score():
         existing = cursor.fetchone()
 
         if existing:
-            cursor.execute(
-                "UPDATE activity SET quiz_score=%s WHERE id=%s",
-                (score, existing[0])
-            )
+            cursor.execute("UPDATE activity SET quiz_score=%s WHERE id=%s", (score, existing[0]))
         else:
             cursor.execute(
                 "INSERT INTO activity (user_id, lesson_name, quiz_score, time_spent) VALUES (%s, %s, %s, %s)",
@@ -151,19 +127,61 @@ def save_quiz_score():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/generate_quiz', methods=['POST'])
+def generate_quiz():
+    data = request.json
+    topic = data.get('topic')
+    custom_content = data.get('content')
+    
+    if not client:
+        return jsonify({"error": "Groq API key missing in .env"}), 500
+
+    prompt_content = f"Generate a quiz about {topic}."
+    if custom_content:
+        prompt_content = f"Generate a quiz strictly based on this content: {custom_content}"
+    
+    prompt = f"""
+    You are an expert technical Quiz Generator.
+    Subject: {topic}
+    Requirement: Generate exactly 5 multiple choice questions.
+    Instructions:
+    * Focus ONLY on {topic} concepts.
+    * Return ONLY a raw JSON array.
+    * Format: [{{"question": "...", "options": ["...", "...", "...", "..."], "answer": 0}}]
+    * answer must be the index of the correct option (0-3).
+    * No preamble or markdown code blocks.
+    
+    Context: {prompt_content}
+    """
+
+    try:
+        chat_completion = client.chat.completions.create(
+            messages=[{"role": "user", "content": prompt}],
+            model="llama-3.3-70b-versatile",
+        )
+        raw_text = chat_completion.choices[0].message.content.strip()
+        
+        # Robust JSON extraction
+        json_match = re.search(r'\[.*\]', raw_text, re.DOTALL)
+        if json_match:
+            raw_text = json_match.group(0)
+            
+        return jsonify(json.loads(raw_text)), 200
+    except Exception as e:
+        print("Groq Error:", str(e))
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/analytics/<int:student_id>', methods=['GET'])
 def analytics(student_id):
     try:
         data = get_analytics(student_id)
         return jsonify(data), 200
     except Exception as e:
-        print("Analytics error:", str(e))
         return jsonify({"error": str(e)}), 500
-    
+
 @app.route('/studied-topics', methods=['GET'])
 def studied_topics():
     user_id = request.args.get('user_id')
-    
     if not user_id:
         return jsonify({'studied_topics': []})
     
@@ -172,19 +190,13 @@ def studied_topics():
         cursor = conn.cursor()
         cursor.execute("""
             SELECT lesson_name, SUM(time_spent) as total_time 
-            FROM activity 
-            WHERE user_id = %s 
-            GROUP BY lesson_name
-            HAVING total_time > 0
+            FROM activity WHERE user_id = %s GROUP BY lesson_name HAVING total_time > 0
         """, (user_id,))
         rows = cursor.fetchall()
         cursor.close()
         conn.close()
-        
-        topics = [{"name": row[0], "time": row[1]} for row in rows]
-        return jsonify({'studied_topics': topics})
+        return jsonify({'studied_topics': [{"name": row[0], "time": row[1]} for row in rows]})
     except Exception as e:
-        print("Error:", e)
         return jsonify({'studied_topics': [], 'error': str(e)}), 500
 
 if __name__ == "__main__":

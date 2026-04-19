@@ -2,55 +2,83 @@ import { useParams, useNavigate } from "react-router-dom";
 import React, { useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import ThemeToggle from "./ThemeToggle";
+import axios from "axios";
+
+const topicContents = {
+  html: {
+    w3url: "https://www.w3schools.com/html/",
+    sections: [
+      { id: "Fundamentals", title: "HTML Fundamentals", content: "HTML stands for Hyper Text Markup Language. it is the standard markup language for creating Web pages. HTML describes the structure of a Web page semantically and originally included cues for the appearance of the document." },
+      { id: "Tags", title: "Common HTML Tags", content: "HTML tags are element names surrounded by angle brackets like <html>. <h1> define most important headings. <p> defines a paragraph. <img> defines an image." },
+      { id: "Navigation", title: "HTML Navigation", content: "Links are found in nearly all web pages. Links allow users to click their way from page to page. The HTML <a> tag defines a hyperlink. The href attribute is the most important attribute, which indicates the link's destination." }
+    ]
+  },
+  css: {
+    w3url: "https://www.w3schools.com/css/",
+    sections: [
+      { id: "Styling", title: "CSS Fundamentals", content: "CSS is the language we use to style an HTML document. CSS describes how HTML elements should be displayed. It saves a lot of work. It can control the layout of multiple web pages all at once." },
+      { id: "Visuals", title: "Text & Colors", content: "Colors are specified using predefined color names, or RGB, HEX, HSL, RGBA, HSLA values. The text-color property is used to set the color of the text. The background-color property sets the background color of an element." }
+    ]
+  },
+  javascript: {
+    w3url: "https://www.w3schools.com/js/",
+    sections: [
+      { id: "Runtime", title: "JS Runtime & Hoisting", content: "JavaScript is a lightweight, interpreted, or just-in-time compiled programming language with first-class functions. Hoisting is a term used to explain how JS moves declarations to the top of their scope." },
+      { id: "Async", title: "Asynchronous JS", content: "Asynchronous programming is a technique that enables your program to start a potentially long-running task and still be able to be responsive to other events while task runs. setTimeout is a commonly used async function." }
+    ]
+  }
+};
 
 function TopicPage() {
   const { name } = useParams();
   const navigate = useNavigate();
   const [timeSpent, setTimeSpent] = useState(0);
-  const [content, setContent] = useState("");
+  const [activeSection, setActiveSection] = useState(null);
+  const [studiedSections, setStudiedSections] = useState([]);
   const timerRef = useRef(null);
+  const studentId = localStorage.getItem("student_id") || localStorage.getItem("user_id");
 
   useEffect(() => {
-    // Start the timer when the component mounts
     timerRef.current = setInterval(() => {
       setTimeSpent((prev) => prev + 1);
     }, 1000);
 
-    // Fetch topic content
-    const fetchContent = async () => {
-      try {
-        const response = await fetch(`/topics/${name.toLowerCase()}.md`);
-        if (response.ok) {
-          const text = await response.text();
-          setContent(text);
-        } else {
-          setContent(`# Content not found\n\nSorry, the content for **${name}** could not be found.`);
-        }
-      } catch (err) {
-        setContent(`# Error\n\nFailed to load content.`);
-      }
-    };
-    fetchContent();
-
-    // Clean up timer when leaving page
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, [name]);
-
-  const handleFinishTopic = async () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
+    if (studentId) {
+      axios.get(`http://127.0.0.1:5000/api/user_focus/${studentId}/${name}`)
+        .then(res => setStudiedSections(res.data))
+        .catch(err => console.log("Error fetching focus:", err));
     }
 
-    try {
-      const studentId = localStorage.getItem("student_id") || localStorage.getItem("user_id");
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [name, studentId]);
 
+  const handleSectionClick = (sectionId) => {
+    setActiveSection(sectionId);
+    if (!studiedSections.includes(sectionId)) {
+      setStudiedSections(prev => [...prev, sectionId]);
+      axios.post("http://127.0.0.1:5000/api/track_focus", {
+        user_id: studentId,
+        topic: name,
+        focus: sectionId
+      });
+    }
+  };
+
+  const handleFinishTopic = async () => {
+    try {
       if (!studentId) return;
 
-      const response = await fetch("http://127.0.0.1:5000/api/track", {
+      const topicData = topicContents[name.toLowerCase()] || { sections: [] };
+      const studiedText = topicData.sections
+        .filter(s => studiedSections.includes(s.id))
+        .map(s => s.content)
+        .join("\n\n");
+
+      sessionStorage.setItem("current_study_content", studiedText);
+
+      await fetch("http://127.0.0.1:5000/api/track", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -59,136 +87,103 @@ function TopicPage() {
           time_spent: timeSpent,
         }),
       });
-
-      if (response.ok) {
-        navigate(`/quiz/${name.toLowerCase()}`);
-      }
+      navigate(`/quiz/${name.toLowerCase()}`);
     } catch (error) {
-      console.error("Error saving activity:", error);
+      console.error("Tracking Error:", error);
     }
   };
 
+  const topicData = topicContents[name.toLowerCase()] || { w3url: `https://www.w3schools.com/${name}`, sections: [{ id: "General", title: name, content: `Study material for ${name} is being updated...` }] };
+
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-color)", color: "var(--text-main)" }} className="animate-fade">
-      {/* Navbar */}
-      <nav style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: "1rem 2.5rem",
-        backgroundColor: "var(--bg-surface)",
-        backdropFilter: "blur(12px)",
-        borderBottom: "1px solid var(--border-color)",
-        position: "sticky",
-        top: 0,
-        zIndex: 100,
-        boxShadow: "var(--shadow-sm)"
+    <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-color)", color: "var(--text-main)" }}>
+      <div style={{
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        padding: "16px 32px", backgroundColor: "var(--nav-bg)", borderBottom: "1px solid var(--border-color)",
+        position: "sticky", top: 0, zIndex: 100
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }} onClick={() => navigate("/dashboard")}>
-          <div style={{ 
-            width: "35px", height: "35px", 
-            background: "var(--accent-gradient)", 
-            borderRadius: "10px", 
-            display: "flex", alignItems: "center", justifyContent: "center" 
-          }}>
-            <span style={{ fontSize: "18px" }}>📊</span>
-          </div>
-          <span style={{ fontSize: "1.1rem", fontWeight: "800", letterSpacing: "-0.5px" }}>
-            Cogni<span style={{ color: "var(--accent-color)" }}>Track</span>
-          </span>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }} onClick={() => navigate("/dashboard")}>
+          <span style={{ fontSize: "14px", fontWeight: "700", textTransform: "uppercase" }}>Learning: {name}</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
           <ThemeToggle />
           <button onClick={() => navigate("/dashboard")} style={{
-            padding: "8px 20px", borderRadius: "12px",
-            backgroundColor: "transparent", color: "var(--text-main)", border: "1px solid var(--border-color)",
-            fontWeight: "700", cursor: "pointer", fontSize: "14px"
+            padding: "6px 16px", borderRadius: "6px", backgroundColor: "transparent",
+            color: "var(--text-main)", border: "1px solid var(--border-color)", fontWeight: "600",
+            fontSize: "12px", cursor: "pointer"
           }}>
             Dashboard
           </button>
         </div>
-      </nav>
+      </div>
 
-      <div style={{ maxWidth: "900px", margin: "40px auto", padding: "0 20px" }}>
-        <div style={{ 
-          backgroundColor: "var(--bg-surface)", 
-          padding: "3rem", 
-          borderRadius: "var(--radius-lg)", 
-          border: "1px solid var(--border-color)", 
-          boxShadow: "var(--shadow-lg)" 
-        }}>
-          
-          <div style={{ 
-            display: "flex", 
-            justifyContent: "space-between", 
-            alignItems: "flex-end", 
-            marginBottom: "3rem", 
-            borderBottom: "2px solid var(--border-color)", 
-            paddingBottom: "1.5rem" 
-          }}>
-            <div>
-              <div style={{ fontSize: "13px", fontWeight: "800", color: "var(--accent-color)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>
-                Current Topic
-              </div>
-              <h1 style={{ fontSize: "2.5rem", fontWeight: "900", color: "var(--text-main)", margin: 0, letterSpacing: "-1px" }}>
-                {name}
-              </h1>
-            </div>
-            
-            <div style={{ 
-              textAlign: "right", 
-              backgroundColor: "var(--bg-color)", 
-              padding: "12px 20px", 
-              borderRadius: "12px",
-              border: "1px solid var(--border-color)"
-            }}>
-              <p style={{ color: "var(--text-secondary)", fontSize: "12px", margin: "0 0 4px 0", fontWeight: "700", textTransform: "uppercase" }}>
-                Time Recorded
-              </p>
-              <p style={{ color: "var(--accent-color)", fontSize: "18px", margin: 0, fontWeight: "900" }}>
-                {Math.floor(timeSpent/60)}m {timeSpent%60}s
-              </p>
-            </div>
+      <div style={{ maxWidth: "1000px", margin: "40px auto", padding: "0 20px", display: "grid", gridTemplateColumns: "250px 1fr", gap: "30px" }}>
+        <div style={{ padding: "20px", backgroundColor: "var(--card-bg)", borderRadius: "12px", border: "1px solid var(--border-color)", alignSelf: "start" }}>
+          <h4 style={{ fontSize: "12px", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: "16px" }}>Sections</h4>
+          <div style={{ display: "grid", gap: "8px" }}>
+            {topicData.sections.map(s => (
+              <button
+                key={s.id}
+                onClick={() => handleSectionClick(s.id)}
+                style={{
+                  textAlign: "left", padding: "10px", borderRadius: "8px", border: "none",
+                  backgroundColor: activeSection === s.id ? "var(--accent-color)" : "transparent",
+                  color: activeSection === s.id ? "#0f172a" : "var(--text-main)",
+                  fontSize: "14px", cursor: "pointer", fontWeight: "500"
+                }}
+              >
+                {studiedSections.includes(s.id) ? "✓ " : "○ "} {s.title}
+              </button>
+            ))}
           </div>
-          
-          <article style={{ 
-            textAlign: "left", 
-            lineHeight: "1.7", 
-            fontSize: "1.1rem", 
-            color: "var(--text-main)" 
-          }} className="markdown-content">
-            <ReactMarkdown>{content}</ReactMarkdown>
-          </article>
-          
-          <div style={{ textAlign: "center", marginTop: "4rem", borderTop: "1px solid var(--border-color)", paddingTop: "3rem" }}>
-            <button 
-              onClick={handleFinishTopic} 
-              style={{
-                padding: "18px 45px", 
-                fontSize: "16px", 
-                fontWeight: "900", 
-                backgroundColor: "var(--accent-color)", 
-                color: "white", 
-                border: "none",
-                borderRadius: "16px", 
-                cursor: "pointer", 
-                boxShadow: "0 10px 25px rgba(59, 130, 246, 0.4)",
-                transition: "all 0.3s"
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-3px)";
-                e.currentTarget.style.boxShadow = "0 15px 30px rgba(59, 130, 246, 0.5)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "0 10px 25px rgba(59, 130, 246, 0.4)";
-              }}
-            >
-              Mastered? Take the Quiz
-            </button>
-            <p style={{ marginTop: "1rem", color: "var(--text-muted)", fontSize: "14px", fontWeight: "500" }}>
-              Your progress will be automatically synchronized.
+        </div>
+
+        <div style={{ padding: "40px", backgroundColor: "var(--card-bg)", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
+          {activeSection ? (
+            <div>
+              <h2 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "20px" }}>
+                {topicData.sections.find(s => s.id === activeSection)?.title}
+              </h2>
+              <div style={{ lineHeight: "1.8", color: "var(--text-secondary)" }}>
+                {topicData.sections.find(s => s.id === activeSection)?.content}
+              </div>
+            </div>
+          ) : (
+            <div style={{ textAlign: "center", padding: "40px" }}>
+              <p style={{ color: "var(--text-secondary)" }}>Select a section to begin. You can also visit W3Schools for more details.</p>
+            </div>
+          )}
+
+          <div style={{ textAlign: "center", marginTop: "60px", borderTop: "1px solid var(--border-color)", paddingTop: "40px" }}>
+            <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "16px" }}>
+              Time Spent: {Math.floor(timeSpent/60)}m {timeSpent%60}s
             </p>
+            <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+              <button 
+                onClick={handleFinishTopic} 
+                disabled={studiedSections.length === 0}
+                style={{
+                  padding: "12px 24px", fontSize: "14px", fontWeight: "700", 
+                  backgroundColor: studiedSections.length > 0 ? "var(--accent-color)" : "var(--border-color)", 
+                  color: "#0f172a", border: "none",
+                  borderRadius: "8px", cursor: studiedSections.length > 0 ? "pointer" : "not-allowed"
+                }}
+              >
+                Generate AI Quiz
+              </button>
+              <a 
+                href={topicData.w3url}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  padding: "12px 24px", fontSize: "14px", fontWeight: "600",
+                  textDecoration: "none", color: "var(--text-main)", border: "1px solid var(--border-color)",
+                  borderRadius: "8px", display: "inline-block"
+                }}
+              >
+                Go to W3Schools ↗
+              </a>
+            </div>
           </div>
         </div>
       </div>

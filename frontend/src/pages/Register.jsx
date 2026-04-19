@@ -18,12 +18,12 @@ function Register() {
 
   const handleRegister = async () => {
     if (!name || !email || !password || !confirmPassword) {
-      showToast("Please fill all fields!", "error");
+      showToast("Please fill all fields.", "error");
       return;
     }
 
     if (password !== confirmPassword) {
-      showToast("Passwords do not match!", "error");
+      showToast("Passwords mismatch.", "error");
       return;
     }
 
@@ -38,13 +38,13 @@ function Register() {
         localStorage.setItem("user_id", response.data.user_id);
         localStorage.setItem("student_id", response.data.user_id);
         localStorage.setItem("student_name", response.data.name);
-        showToast("Registration Successful! Welcome 🎉", "success");
-        setTimeout(() => navigate("/dashboard"), 1500);
+        showToast("Account created.", "success");
+        setTimeout(() => navigate("/dashboard"), 1000);
       } else {
-        showToast("Email already exists! Try login.", "error");
+        showToast("Registration failed.", "error");
       }
     } catch (err) {
-      showToast("Registration failed! Check backend.", "error");
+      showToast("Connection failed.", "error");
     }
   };
 
@@ -55,17 +55,12 @@ function Register() {
       justifyContent: "center",
       alignItems: "center",
       minHeight: "100vh",
-      backgroundColor: "var(--bg-color)",
-      backgroundImage: "radial-gradient(circle at 2px 2px, var(--border-color) 1px, transparent 0)",
-      backgroundSize: "40px 40px",
-    }} className="animate-fade">
-      
-      {/* Theme Toggle Positioned Top Right */}
-      <div style={{ position: "absolute", top: "2rem", right: "2rem" }}>
+      padding: "20px"
+    }}>
+      <div style={{ position: "absolute", top: "20px", right: "20px" }}>
         <ThemeToggle />
       </div>
 
-      {/* Toast */}
       {toast && (
         <Toast
           message={toast.message}
@@ -75,153 +70,102 @@ function Register() {
       )}
 
       <div style={{
-        backgroundColor: "var(--bg-surface)",
-        padding: "3rem",
-        borderRadius: "var(--radius-lg)",
+        backgroundColor: "var(--card-bg)",
+        padding: "48px 40px",
+        borderRadius: "12px",
         width: "100%",
-        maxWidth: "450px",
+        maxWidth: "400px",
         border: "1px solid var(--border-color)",
-        boxShadow: "var(--shadow-lg)",
-        backdropFilter: "blur(20px)",
+        textAlign: "center"
       }}>
-        <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
-          <div style={{ 
-            width: "50px", 
-            height: "50px", 
-            background: "var(--accent-gradient)", 
-            borderRadius: "14px", 
-            display: "inline-flex", 
-            alignItems: "center", 
-            justifyContent: "center",
-            marginBottom: "1rem",
-            boxShadow: "0 10px 20px rgba(59, 130, 246, 0.3)"
-          }}>
-            <span style={{ fontSize: "24px" }}>📝</span>
-          </div>
-          <h2 style={{ color: "var(--text-main)", fontSize: "1.8rem", fontWeight: "900", letterSpacing: "-0.5px" }}>
-            Join CogniTrack
-          </h2>
-          <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginTop: "8px" }}>
-            Initialize your learning analytics profile today.
-          </p>
-        </div>
+        <h2 style={{ 
+          fontSize: "24px", 
+          fontWeight: "600", 
+          marginBottom: "8px",
+          color: "var(--text-main)" 
+        }}>
+          Register
+        </h2>
+        <p style={{ 
+          color: "var(--text-secondary)", 
+          fontSize: "14px", 
+          marginBottom: "32px" 
+        }}>
+          Create your account to start learning.
+        </p>
 
-        {/* Name */}
-        <div style={{ marginBottom: "1.25rem" }}>
-          <label style={{ color: "var(--text-secondary)", fontSize: "13px", fontWeight: "700", display: "block", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Full Name</label>
+        <div style={{ textAlign: "left", marginBottom: "16px" }}>
+          <label style={{ color: "var(--text-secondary)", fontSize: "12px", fontWeight: "500", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "6px" }}>Name</label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="John Doe"
             style={{
-               width: "100%", padding: "12px 16px",
-               borderRadius: "12px", border: "1px solid var(--border-color)",
-               backgroundColor: "var(--bg-color)", color: "var(--text-main)",
-               fontSize: "15px", outline: "none", boxSizing: "border-box",
-               transition: "all 0.2s"
+              width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid var(--border-color)",
+              backgroundColor: "var(--input-bg)", color: "var(--text-main)", fontSize: "14px", outline: "none", boxSizing: "border-box"
             }}
-            onFocus={(e) => e.target.style.borderColor = "var(--accent-color)"}
-            onBlur={(e) => e.target.style.borderColor = "var(--border-color)"}
           />
         </div>
 
-        {/* Email */}
-        <div style={{ marginBottom: "1.25rem" }}>
-          <label style={{ color: "var(--text-secondary)", fontSize: "13px", fontWeight: "700", display: "block", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Institutional Email</label>
+        <div style={{ textAlign: "left", marginBottom: "16px" }}>
+          <label style={{ color: "var(--text-secondary)", fontSize: "12px", fontWeight: "500", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "6px" }}>Email</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="name@university.edu"
             style={{
-              width: "100%", padding: "12px 16px",
-              borderRadius: "12px", border: "1px solid var(--border-color)",
-              backgroundColor: "var(--bg-color)", color: "var(--text-main)",
-              fontSize: "15px", outline: "none", boxSizing: "border-box",
-              transition: "all 0.2s"
+              width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid var(--border-color)",
+              backgroundColor: "var(--input-bg)", color: "var(--text-main)", fontSize: "14px", outline: "none", boxSizing: "border-box"
             }}
-            onFocus={(e) => e.target.style.borderColor = "var(--accent-color)"}
-            onBlur={(e) => e.target.style.borderColor = "var(--border-color)"}
           />
         </div>
 
-        {/* Password Group */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "2rem" }}>
-          <div>
-            <label style={{ color: "var(--text-secondary)", fontSize: "13px", fontWeight: "700", display: "block", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              style={{
-                width: "100%", padding: "12px 16px",
-                borderRadius: "12px", border: "1px solid var(--border-color)",
-                backgroundColor: "var(--bg-color)", color: "var(--text-main)",
-                fontSize: "15px", outline: "none", boxSizing: "border-box",
-                transition: "all 0.2s"
-              }}
-              onFocus={(e) => e.target.style.borderColor = "var(--accent-color)"}
-              onBlur={(e) => e.target.style.borderColor = "var(--border-color)"}
-            />
-          </div>
-          <div>
-            <label style={{ color: "var(--text-secondary)", fontSize: "13px", fontWeight: "700", display: "block", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Confirm</label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="••••••••"
-              style={{
-                width: "100%", padding: "12px 16px",
-                borderRadius: "12px", border: "1px solid var(--border-color)",
-                backgroundColor: "var(--bg-color)", color: "var(--text-main)",
-                fontSize: "15px", outline: "none", boxSizing: "border-box",
-                transition: "all 0.2s"
-              }}
-              onFocus={(e) => e.target.style.borderColor = "var(--accent-color)"}
-              onBlur={(e) => e.target.style.borderColor = "var(--border-color)"}
-            />
-          </div>
+        <div style={{ textAlign: "left", marginBottom: "16px" }}>
+          <label style={{ color: "var(--text-secondary)", fontSize: "12px", fontWeight: "500", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "6px" }}>Password</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{
+              width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid var(--border-color)",
+              backgroundColor: "var(--input-bg)", color: "var(--text-main)", fontSize: "14px", outline: "none", boxSizing: "border-box"
+            }}
+          />
         </div>
 
-        {/* Register Button */}
+        <div style={{ textAlign: "left", marginBottom: "32px" }}>
+          <label style={{ color: "var(--text-secondary)", fontSize: "12px", fontWeight: "500", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "6px" }}>Confirm Password</label>
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            style={{
+              width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid var(--border-color)",
+              backgroundColor: "var(--input-bg)", color: "var(--text-main)", fontSize: "14px", outline: "none", boxSizing: "border-box"
+            }}
+          />
+        </div>
+
         <button
           onClick={handleRegister}
           style={{
-            width: "100%", padding: "16px",
-            backgroundColor: "var(--accent-color)", color: "white",
-            border: "none", borderRadius: "14px",
-            fontSize: "16px", fontWeight: "800", cursor: "pointer",
-            boxShadow: "0 10px 20px rgba(59, 130, 246, 0.3)",
-            transition: "all 0.3s"
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "translateY(-2px)";
-            e.currentTarget.style.boxShadow = "0 15px 25px rgba(59, 130, 246, 0.4)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "translateY(0)";
-            e.currentTarget.style.boxShadow = "0 10px 20px rgba(59, 130, 246, 0.3)";
+            width: "100%", padding: "14px", backgroundColor: "var(--accent-color)",
+            color: "#0f172a", border: "none", borderRadius: "8px",
+            fontSize: "15px", fontWeight: "600", cursor: "pointer", marginBottom: "20px"
           }}
         >
-          Initialize Account
+          Create Account
         </button>
 
-        <p style={{ textAlign: "center", marginTop: "2rem", color: "var(--text-secondary)", fontSize: "14px" }}>
-          Already have an account?{" "}
-          <span
-            onClick={() => navigate("/login")}
-            style={{ color: "var(--accent-color)", cursor: "pointer", fontWeight: "800" }}
-          >
-            Sign In
+        <div style={{ height: "1px", backgroundColor: "var(--border-color)", margin: "24px 0" }} />
+
+        <p style={{ color: "var(--text-secondary)", fontSize: "14px" }}>
+          Joined before?{" "}
+          <span onClick={() => navigate("/login")}
+            style={{ color: "var(--accent-color)", cursor: "pointer", fontWeight: "500" }}>
+            Login now
           </span>
         </p>
-      </div>
-
-      <div style={{ marginTop: "2rem", color: "var(--text-muted)", fontSize: "12px" }}>
-        © 2026 CogniTrack Intelligence Systems
       </div>
     </div>
   );
