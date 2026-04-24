@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from db import get_db_connection
 
 def get_analytics(student_id):
@@ -21,42 +22,50 @@ def get_analytics(student_id):
             "topic_stats": [],
             "difficult_topics": [],
             "most_studied": None,
+            "overall_efficiency": 0
         }
 
-    avg_time = round(float(df["time_spent"].mean()), 2)
-    avg_score = round(float(df["quiz_score"].mean()), 2)
-
+    # 1. Topic Aggregation
     topic_stats = df.groupby("lesson_name").agg(
         total_time=("time_spent", "sum"),
-        avg_score=("quiz_score", "mean")
+        avg_score=("quiz_score", "mean"),
+        attempts=("lesson_name", "count")
     ).reset_index()
 
-    topic_stats["avg_score"] = topic_stats["avg_score"].round(2)
+    # 2. Efficiency Metric (Score per minute of study)
+    # We use (total_time / 60) to get minutes, then avoid division by zero
+    topic_stats["efficiency"] = topic_stats.apply(
+        lambda x: round(x["avg_score"] / (x["total_time"] / 60), 2) if x["total_time"] > 0 else 0, axis=1
+    )
 
-    # Convert to plain Python types
-    topic_stats_list = []
-    for _, row in topic_stats.iterrows():
-        topic_stats_list.append({
-            "lesson_name": str(row["lesson_name"]),
-            "total_time": int(row["total_time"]),
-            "avg_score": float(row["avg_score"]),
-        })
+    # 3. Behavior Status Labeling
+    def determine_status(row):
+        if row["avg_score"] >= 80: return "Mastering"
+        if row["avg_score"] < 50 and row["total_time"] > 300: return "Struggling"
+        if row["total_time"] < 60: return "Low Engagement"
+        return "Learning"
 
-    # Difficult topics
-    difficult = []
-    for row in topic_stats_list:
-        if row["avg_score"] < 60 or row["total_time"] > 150:
-            difficult.append(row["lesson_name"])
+    topic_stats["status"] = topic_stats.apply(determine_status, axis=1)
 
-    # Most studied
-    most_studied = str(topic_stats.loc[
-        topic_stats["total_time"].idxmax(), "lesson_name"
-    ])
+    # 4. Filter Specific Insights
+    difficult = topic_stats[topic_stats["status"] == "Struggling"]["lesson_name"].tolist()
+    
+    # 5. Global Metrics
+    avg_time = round(float(df["time_spent"].mean()), 2)
+    avg_score = round(float(df["quiz_score"].mean()), 2)
+    overall_efficiency = round(float(topic_stats["efficiency"].mean()), 2)
+    
+    most_studied = str(topic_stats.loc[topic_stats["total_time"].idxmax(), "lesson_name"])
 
+    # Finalize List for Dashboard
+    stats_list = topic_stats.to_dict('records')
+    
     return {
         "avg_time": avg_time,
         "avg_score": avg_score,
-        "topic_stats": topic_stats_list,
+        "overall_efficiency": overall_efficiency,
+        "topic_stats": stats_list,
         "difficult_topics": difficult,
         "most_studied": most_studied,
+        "engagement_level": "High" if avg_time > 120 else "Moderate"
     }

@@ -26,6 +26,27 @@ const topicContents = {
       { id: "Runtime", title: "JS Runtime & Hoisting", content: "JavaScript is a lightweight, interpreted, or just-in-time compiled programming language with first-class functions. Hoisting is a term used to explain how JS moves declarations to the top of their scope." },
       { id: "Async", title: "Asynchronous JS", content: "Asynchronous programming is a technique that enables your program to start a potentially long-running task and still be able to be responsive to other events while task runs. setTimeout is a commonly used async function." }
     ]
+  },
+  java: {
+    w3url: "https://www.w3schools.com/java/",
+    sections: [
+      { id: "Basics", title: "Java Basics", content: "Java is a popular programming language, created in 1995. It is owned by Oracle, and more than 3 billion devices run Java. It is used for mobile apps, desktop apps, web apps, and much more. Java is platform independent (Write Once, Run Anywhere)." },
+      { id: "OOPs", title: "Object Oriented Programming", content: "OOP stands for Object-Oriented Programming. Procedural programming is about writing procedures or methods that perform operations on the data, while object-oriented programming is about creating objects that contain both data and methods. Key principles: Inheritance, Abstraction, Encapsulation, Polymorphism." }
+    ]
+  },
+  python: {
+    w3url: "https://www.w3schools.com/python/",
+    sections: [
+      { id: "Basics", title: "Python Intro", content: "Python is a popular programming language. It was created by Guido van Rossum, and released in 1991. It is used for web development, software development, mathematics, and system scripting. Python works on different platforms (Windows, Mac, Linux, Raspberry Pi, etc)." },
+      { id: "DataStructures", title: "Python Collections", content: "There are four collection data types in the Python: List is a collection which is ordered and changeable. Tuple is a collection which is ordered and unchangeable. Set is a collection which is unordered, unchangeable, and unindexed. Dictionary is a collection which is ordered and changeable. No duplicate members." }
+    ]
+  },
+  c: {
+    w3url: "https://www.w3schools.com/c/",
+    sections: [
+      { id: "Basics", title: "C Basics", content: "C is a general-purpose programming language that has been around for a long time. C is very fast, compared to other programming languages like Java and Python. C is very versatile; it can be used in both low-level and high-level applications." },
+      { id: "Memory", title: "Pointers & Memory", content: "A pointer is a variable that stores the memory address of another variable as its value. Memory management is a crucial part of C programming. Primitives like int, float, and char have specific sizes in memory (e.g., int is usually 4 bytes)." }
+    ]
   }
 };
 
@@ -70,22 +91,23 @@ function TopicPage() {
     try {
       if (!studentId) return;
 
-      const topicData = topicContents[name.toLowerCase()] || { sections: [] };
-      const studiedText = topicData.sections
+      // Ensure we use the same topicData logic as the UI
+      const currentTopicData = topicContents[name.toLowerCase()] || { 
+        sections: [{ id: "General", title: name, content: `Study material for ${name} is being updated...` }] 
+      };
+      
+      const studiedText = currentTopicData.sections
         .filter(s => studiedSections.includes(s.id))
         .map(s => s.content)
         .join("\n\n");
 
-      sessionStorage.setItem("current_study_content", studiedText);
+      // Using localStorage for better reliability across page transitions
+      localStorage.setItem(`study_content_${name.toLowerCase()}`, studiedText);
 
-      await fetch("http://127.0.0.1:5000/api/track", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          student_id: studentId,
-          topic: name,
-          time_spent: timeSpent,
-        }),
+      await axios.post("http://127.0.0.1:5000/api/track", {
+        student_id: studentId,
+        topic: name,
+        time_spent: timeSpent,
       });
       navigate(`/quiz/${name.toLowerCase()}`);
     } catch (error) {

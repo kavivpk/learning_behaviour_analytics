@@ -105,21 +105,34 @@ function Dashboard() {
   }, [studentId]);
 
   const handleStudyClick = (topic) => {
-    window.open(topic.url, "_blank");
+    const startTime = Date.now();
+    const studyWindow = window.open(topic.url, "_blank");
     sessionStorage.removeItem("current_study_content");
 
-    fetch("http://127.0.0.1:5000/api/track", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        student_id: studentId,
-        topic: topic.name,
-        time_spent: 300, 
-      }),
-    }).then(() => {
-      fetchData();
-      showToast(`AI Tracking: Study session for ${topic.name} saved!`, "success");
-    });
+    showToast(`AI Tracking: Analyzing your session on ${topic.name}...`, "info");
+
+    const checkWindow = setInterval(() => {
+      if (studyWindow && studyWindow.closed) {
+        clearInterval(checkWindow);
+        const endTime = Date.now();
+        const durationSeconds = Math.floor((endTime - startTime) / 1000);
+
+        if (durationSeconds > 5) {
+          fetch("http://127.0.0.1:5000/api/track", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              student_id: studentId,
+              topic: topic.name,
+              time_spent: durationSeconds,
+            }),
+          }).then(() => {
+            fetchData();
+            showToast(`Time Spent: ${durationSeconds}s. Behavioral profile updated for ${topic.name}!`, "success");
+          });
+        }
+      }
+    }, 1000);
   };
 
   const handleQuizClick = (topic) => {
@@ -233,20 +246,39 @@ function Dashboard() {
         </div>
 
         {/* METRICS ROW */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "24px", marginBottom: "48px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "24px", marginBottom: "48px" }}>
           <div style={{ padding: "24px", backgroundColor: "var(--card-bg)", borderRadius: "16px", border: "1px solid var(--border-color)", borderLeft: "4px solid var(--accent-color)" }}>
-            <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "700", textTransform: "uppercase" }}>Total Study Time</span>
-            <h2 style={{ fontSize: "28px", fontWeight: "800", marginTop: "8px" }}>{analyticsData?.avg_time || 0}s</h2>
-          </div>
-          <div style={{ padding: "24px", backgroundColor: "var(--card-bg)", borderRadius: "16px", border: "1px solid var(--border-color)", borderLeft: "4px solid #2dd4bf" }}>
-            <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "700", textTransform: "uppercase" }}>Quiz Accuracy</span>
+            <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "700", textTransform: "uppercase" }}>Mastery Score</span>
             <h2 style={{ fontSize: "28px", fontWeight: "800", marginTop: "8px" }}>{analyticsData?.avg_score || 0}%</h2>
           </div>
+          <div style={{ padding: "24px", backgroundColor: "var(--card-bg)", borderRadius: "16px", border: "1px solid var(--border-color)", borderLeft: "4px solid #2dd4bf" }}>
+            <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "700", textTransform: "uppercase" }}>Learning Efficiency</span>
+            <h2 style={{ fontSize: "28px", fontWeight: "800", marginTop: "8px" }}>{analyticsData?.overall_efficiency || 0} pts/m</h2>
+          </div>
+          <div style={{ padding: "24px", backgroundColor: "var(--card-bg)", borderRadius: "16px", border: "1px solid var(--border-color)", borderLeft: "4px solid #f59e0b" }}>
+            <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "700", textTransform: "uppercase" }}>Engagement Level</span>
+            <h2 style={{ fontSize: "28px", fontWeight: "800", marginTop: "8px" }}>{analyticsData?.engagement_level || "Analyzing..."}</h2>
+          </div>
           <div style={{ padding: "24px", backgroundColor: "var(--card-bg)", borderRadius: "16px", border: "1px solid var(--border-color)", borderLeft: "4px solid #a855f7" }}>
-            <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "700", textTransform: "uppercase" }}>Dominant Topic</span>
+            <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "700", textTransform: "uppercase" }}>Dominant Skill</span>
             <h2 style={{ fontSize: "22px", fontWeight: "800", marginTop: "8px" }}>{analyticsData?.most_studied || "N/A"}</h2>
           </div>
         </div>
+
+        {/* ALERTS SECTION */}
+        {analyticsData?.difficult_topics?.length > 0 && (
+          <div style={{ marginBottom: "48px", padding: "24px", backgroundColor: "rgba(239, 68, 68, 0.05)", borderRadius: "16px", border: "1px solid rgba(239, 68, 68, 0.2)" }}>
+             <h4 style={{ color: "#ef4444", fontSize: "14px", fontWeight: "800", marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
+                <span>⚠</span> ACTION REQUIRED: PERFORMANCE STRUGGLE DETECTED
+             </h4>
+             <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "16px" }}>The following areas show high study time but low retention. We recommend re-visiting the theory or taking a targeted AI quiz.</p>
+             <div style={{ display: "flex", gap: "8px" }}>
+                {analyticsData.difficult_topics.map(t => (
+                  <span key={t} style={{ padding: "6px 14px", backgroundColor: "#ef4444", color: "white", borderRadius: "8px", fontSize: "11px", fontWeight: "700" }}>{t}</span>
+                ))}
+             </div>
+          </div>
+        )}
 
         {/* TOPICS GRID */}
         <div style={{ marginBottom: "32px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
@@ -257,27 +289,40 @@ function Dashboard() {
         <div style={{
           display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "16px",
         }}>
-          {topics.map((topic, index) => (
-            <div key={index} style={{
-              backgroundColor: "var(--card-bg)", borderRadius: "16px", border: "1px solid var(--border-color)", padding: "20px",
-              display: "flex", flexDirection: "column", gap: "16px", transition: "transform 0.2s",
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <div style={{ padding: "6px 10px", backgroundColor: "var(--input-bg)", borderRadius: "8px", fontSize: "12px", fontWeight: "900", color: "var(--accent-color)" }}>{topic.symbol}</div>
-                <span style={{ fontWeight: "700", fontSize: "14px" }}>{topic.name}</span>
+          {topics.map((topic, index) => {
+            const stats = analyticsData?.topic_stats?.find(s => s.lesson_name === topic.name);
+            let statusColor = "var(--text-muted)";
+            if (stats?.status === "Mastering") statusColor = "#2dd4bf";
+            if (stats?.status === "Struggling") statusColor = "#ef4444";
+
+            return (
+              <div key={index} style={{
+                backgroundColor: "var(--card-bg)", borderRadius: "16px", border: "1px solid var(--border-color)", padding: "20px",
+                display: "flex", flexDirection: "column", gap: "16px", transition: "transform 0.2s",
+                position: "relative", overflow: "hidden"
+              }}>
+                {stats && (
+                    <div style={{ position: "absolute", top: 0, right: 0, padding: "4px 10px", backgroundColor: statusColor, color: "#fff", fontSize: "9px", fontWeight: "900", textTransform: "uppercase" }}>
+                        {stats.status}
+                    </div>
+                )}
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <div style={{ padding: "6px 10px", backgroundColor: "var(--input-bg)", borderRadius: "8px", fontSize: "12px", fontWeight: "900", color: "var(--accent-color)" }}>{topic.symbol}</div>
+                  <span style={{ fontWeight: "700", fontSize: "14px" }}>{topic.name}</span>
+                </div>
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <button onClick={() => handleStudyClick(topic)} style={{
+                    flex: 1, padding: "10px", borderRadius: "10px", border: "1px solid var(--border-color)",
+                    backgroundColor: "transparent", color: "var(--text-main)", fontSize: "12px", fontWeight: "700", cursor: "pointer",
+                  }}>Study</button>
+                  <button onClick={() => handleQuizClick(topic)} style={{
+                    flex: 1, padding: "10px", borderRadius: "10px", border: "none",
+                    backgroundColor: "var(--accent-color)", color: "#0f172a", fontSize: "12px", fontWeight: "800", cursor: "pointer",
+                  }}>Quiz</button>
+                </div>
               </div>
-              <div style={{ display: "flex", gap: "10px" }}>
-                <button onClick={() => handleStudyClick(topic)} style={{
-                  flex: 1, padding: "10px", borderRadius: "10px", border: "1px solid var(--border-color)",
-                  backgroundColor: "transparent", color: "var(--text-main)", fontSize: "12px", fontWeight: "700", cursor: "pointer",
-                }}>Study</button>
-                <button onClick={() => handleQuizClick(topic)} style={{
-                  flex: 1, padding: "10px", borderRadius: "10px", border: "none",
-                  backgroundColor: "var(--accent-color)", color: "#0f172a", fontSize: "12px", fontWeight: "800", cursor: "pointer",
-                }}>Quiz</button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

@@ -132,43 +132,86 @@ def generate_quiz():
     data = request.json
     topic = data.get('topic')
     custom_content = data.get('content')
+    focus = data.get('focus')
     
     if not client:
+        print("Backend Error: GROQ_API_KEY Missing")
         return jsonify({"error": "Groq API key missing in .env"}), 500
 
-    prompt_content = f"Generate a quiz about {topic}."
-    if custom_content:
-        prompt_content = f"Generate a quiz strictly based on this content: {custom_content}"
+    # Behavioral Guard: Only generate if user has actually studied
+    student_id = data.get('student_id')
+    print(f"DEBUG: Generating quiz for Student:{student_id}, Topic:{topic}, Focus:{focus}")
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT SUM(time_spent) FROM activity WHERE user_id=%s AND lesson_name=%s", (student_id, topic))
+    total_time = cursor.fetchone()[0] or 0
+    # 1. Fetch previously answered questions to avoid duplicates
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT question_text FROM question_history WHERE user_id=%s AND topic=%s", (student_id, topic))
+    past_questions = [row[0] for row in cursor.fetchall()]
+    cursor.close()
+    conn.close()
+
+    duplicates_instruction = ""
+    if past_questions:
+        # Limit to last 20 to avoid prompt bloat
+        past_list = "\n- ".join(past_questions[-20:])
+        duplicates_instruction = f"IMPORTANT: DO NOT generate any of these previous questions:\n- {past_list}"
+
+    if not custom_content or len(custom_content.strip()) < 20:
+        # Fallback to general knowledge if user hasn't studied specific content yet
+        context_instruction = f"based on general foundational concepts of {topic} for a beginner level."
+        if focus:
+            context_instruction += f" Specifically focus on {focus}."
+        context_instruction += " Ensure questions are clear and educational."
+    else:
+        # Strictly use provided content
+        context_instruction = f"strictly and ONLY based on the specific concepts from this user-studied text: {custom_content}. Do not include external knowledge or general foundational concepts not mentioned in the text."
+        if focus:
+            context_instruction += f" Specifically focus on the area of {focus} mentioned in the text."
     
     prompt = f"""
-    You are an expert technical Quiz Generator.
-    Subject: {topic}
-    Requirement: Generate exactly 5 multiple choice questions.
-    Instructions:
-    * Focus ONLY on {topic} concepts.
-    * Return ONLY a raw JSON array.
-    * Format: [{{"question": "...", "options": ["...", "...", "...", "..."], "answer": 0}}]
-    * answer must be the index of the correct option (0-3).
-    * No preamble or markdown code blocks.
+    You are a professional academic assessment agent.
+    TASK: Generate a high-quality technical quiz of exactly 5 multiple choice questions for the subject: {topic}.
+    SOURCE: The questions should be {context_instruction}.
+    {duplicates_instruction}
     
-    Context: {prompt_content}
+    OUTPUT SPECIFICATION:
+    1. Return ONLY valid JSON.
+    2. Format: [
+       {{"question": "What is...", "options": ["A", "B", "C", "D"], "answer": 0, "focus": "{focus if focus else 'AI'}"}},
+       ...
+    ]
+    3. 'answer' is the 0-indexed position of the correct option.
+    4. NO markdown, NO code blocks, NO preamble. Raw text JSON only.
     """
 
     try:
         chat_completion = client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
             model="llama-3.3-70b-versatile",
+            temperature=0.7
         )
         raw_text = chat_completion.choices[0].message.content.strip()
+        print(f"DEBUG - Raw LLM Response for {topic}: {raw_text[:200]}...") # Log start of response
         
-        # Robust JSON extraction
-        json_match = re.search(r'\[.*\]', raw_text, re.DOTALL)
+        # Resilient JSON cleaning
+        if "```json" in raw_text:
+            raw_text = raw_text.split("```json")[1].split("```")[0].strip()
+        elif "```" in raw_text:
+            raw_text = raw_text.split("```")[1].split("```")[0].strip()
+            
+        # Regex fallback for deep extraction
+        json_match = re.search(r'\[\s*\{.*\}\s*\]', raw_text, re.DOTALL)
         if json_match:
             raw_text = json_match.group(0)
             
-        return jsonify(json.loads(raw_text)), 200
+        quiz_data = json.loads(raw_text)
+        return jsonify(quiz_data), 200
     except Exception as e:
-        print("Groq Error:", str(e))
+        print("Groq/JSON Exception:", str(e))
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/analytics/<int:student_id>', methods=['GET'])
@@ -198,6 +241,52 @@ def studied_topics():
         return jsonify({'studied_topics': [{"name": row[0], "time": row[1]} for row in rows]})
     except Exception as e:
         return jsonify({'studied_topics': [], 'error': str(e)}), 500
+
+@app.route('/api/mark_answered', methods=['POST'])
+def mark_answered():
+    try:
+        data = request.json
+        user_id = data['user_id']
+        topic = data['topic']
+        question_text = data['question_text']
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        # Create table if not exists (in case init_db wasn't run)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS question_history (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                topic VARCHAR(100) NOT NULL,
+                question_text TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        cursor.execute(
+            "INSERT INTO question_history (user_id, topic, question_text) VALUES (%s, %s, %s)",
+            (user_id, topic, question_text)
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return jsonify({"message": "Question recorded"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/answered_questions', methods=['GET'])
+def get_answered():
+    try:
+        user_id = request.args.get('user_id')
+        topic = request.args.get('topic')
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT question_text FROM question_history WHERE user_id=%s AND topic=%s", (user_id, topic))
+        rows = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return jsonify({"answered": [r[0] for r in rows]}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)
