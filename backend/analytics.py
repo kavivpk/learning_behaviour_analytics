@@ -10,8 +10,17 @@ def get_analytics(student_id):
         (student_id,)
     )
     rows = cursor.fetchall()
+    cursor.execute(
+        "SELECT points, streak_count FROM users WHERE id = %s",
+        (student_id,)
+    )
+    user_meta = cursor.fetchone()
+    
     cursor.close()
     conn.close()
+
+    points = user_meta[0] if user_meta else 0
+    streak = user_meta[1] if user_meta else 0
 
     df = pd.DataFrame(rows, columns=["lesson_name", "time_spent", "quiz_score"])
 
@@ -21,8 +30,11 @@ def get_analytics(student_id):
             "avg_score": 0,
             "topic_stats": [],
             "difficult_topics": [],
-            "most_studied": None,
-            "overall_efficiency": 0
+            "most_studied": "None",
+            "overall_efficiency": 0,
+            "points": points,
+            "streak": streak,
+            "engagement_level": "New Student"
         }
 
     # 1. Topic Aggregation
@@ -67,5 +79,7 @@ def get_analytics(student_id):
         "topic_stats": stats_list,
         "difficult_topics": difficult,
         "most_studied": most_studied,
-        "engagement_level": "High" if avg_time > 120 else "Moderate"
+        "engagement_level": "High" if avg_time > 120 else "Moderate",
+        "points": points,
+        "streak": streak
     }

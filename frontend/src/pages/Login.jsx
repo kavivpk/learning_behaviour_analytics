@@ -42,7 +42,8 @@ function Login() {
       justifyContent: "center",
       alignItems: "center",
       minHeight: "100vh",
-      padding: "20px"
+      padding: "20px",
+      backgroundColor: "var(--bg-color)"
     }}>
       <div style={{ position: "absolute", top: "20px", right: "20px" }}>
         <ThemeToggle />
@@ -56,51 +57,46 @@ function Login() {
         />
       )}
 
-      <div style={{
-        backgroundColor: "var(--card-bg)",
+      <div className="glass-card animate-fade-in" style={{
         padding: "48px 40px",
-        borderRadius: "12px",
         width: "100%",
         maxWidth: "400px",
-        border: "1px solid var(--border-color)",
         textAlign: "center"
       }}>
-        <h2 style={{ 
-          fontSize: "24px", 
-          fontWeight: "600", 
-          marginBottom: "8px", 
-          color: "var(--text-main)" 
+        <h2 className="text-gradient" style={{ 
+          fontSize: "32px", 
+          marginBottom: "8px"
         }}>
-          Login
+          Welcome Back
         </h2>
         <p style={{ 
           color: "var(--text-secondary)", 
           fontSize: "14px", 
           marginBottom: "32px" 
         }}>
-          Enter your details to access your account.
+          Continue your personalized learning journey
         </p>
 
         <div style={{ textAlign: "left", marginBottom: "20px" }}>
           <label style={{ 
             color: "var(--text-secondary)", 
             fontSize: "12px", 
-            fontWeight: "500", 
+            fontWeight: "700", 
             textTransform: "uppercase",
             letterSpacing: "0.05em",
             display: "block",
             marginBottom: "8px"
-          }}>Email</label>
+          }}>Email Address</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             style={{
               width: "100%", 
-              padding: "12px", 
-              borderRadius: "8px", 
+              padding: "12px 16px", 
+              borderRadius: "12px", 
               border: "1px solid var(--border-color)",
-              backgroundColor: "var(--input-bg)", 
+              backgroundColor: "var(--glass-bg)", 
               color: "var(--text-main)",
               fontSize: "14px", 
               outline: "none",
@@ -113,7 +109,7 @@ function Login() {
           <label style={{ 
             color: "var(--text-secondary)", 
             fontSize: "12px", 
-            fontWeight: "500", 
+            fontWeight: "700", 
             textTransform: "uppercase",
             letterSpacing: "0.05em",
             display: "block", 
@@ -125,10 +121,10 @@ function Login() {
             onChange={(e) => setPassword(e.target.value)}
             style={{
               width: "100%", 
-              padding: "12px",
-              borderRadius: "8px", 
+              padding: "12px 16px",
+              borderRadius: "12px", 
               border: "1px solid var(--border-color)",
-              backgroundColor: "var(--input-bg)", 
+              backgroundColor: "var(--glass-bg)", 
               color: "var(--text-main)",
               fontSize: "14px", 
               outline: "none",
@@ -139,16 +135,10 @@ function Login() {
 
         <button
           onClick={handleLogin}
+          className="premium-btn"
           style={{
             width: "100%", 
             padding: "14px", 
-            backgroundColor: "var(--accent-color)",
-            color: "#0f172a", 
-            border: "none", 
-            borderRadius: "8px",
-            fontSize: "15px", 
-            fontWeight: "600", 
-            cursor: "pointer",
             marginBottom: "20px"
           }}
         >
@@ -164,7 +154,7 @@ function Login() {
         <p style={{ color: "var(--text-secondary)", fontSize: "14px" }}>
           New here?{" "}
           <span onClick={() => navigate("/register")}
-            style={{ color: "var(--accent-color)", cursor: "pointer", fontWeight: "500" }}>
+            style={{ color: "var(--accent-color)", cursor: "pointer", fontWeight: "700" }}>
             Create an account
           </span>
         </p>

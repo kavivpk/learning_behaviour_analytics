@@ -6,6 +6,8 @@ from groq import Groq
 import os
 import json
 import re
+from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime, date, timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -16,6 +18,38 @@ if groq_api_key:
 
 app = Flask(__name__)
 CORS(app)
+
+def migrate_db():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        # Add missing columns to users table
+        cursor.execute("SHOW COLUMNS FROM users LIKE 'points'")
+        if not cursor.fetchone():
+            cursor.execute("ALTER TABLE users ADD COLUMN points INT DEFAULT 0")
+        
+        cursor.execute("SHOW COLUMNS FROM users LIKE 'streak_count'")
+        if not cursor.fetchone():
+            cursor.execute("ALTER TABLE users ADD COLUMN streak_count INT DEFAULT 0")
+            
+        cursor.execute("SHOW COLUMNS FROM users LIKE 'last_activity'")
+        if not cursor.fetchone():
+            cursor.execute("ALTER TABLE users ADD COLUMN last_activity DATE")
+            
+        # Add quiz_score to activity if missing
+        cursor.execute("SHOW COLUMNS FROM activity LIKE 'quiz_score'")
+        if not cursor.fetchone():
+            cursor.execute("ALTER TABLE activity ADD COLUMN quiz_score DECIMAL(5,2) DEFAULT 0")
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+        print("Database schema migration completed.")
+    except Exception as e:
+        print(f"Migration Error: {e}")
+
+# Run migration on startup
+migrate_db()
 
 @app.route("/")
 def home():
@@ -36,9 +70,10 @@ def register():
     if existing:
         return jsonify({"success": False, "message": "Email already exists"})
 
+    hashed_password = generate_password_hash(password)
     cursor.execute(
-        "INSERT INTO users (name, email, password) VALUES (%s, %s, %s)",
-        (name, email, password)
+        "INSERT INTO users (name, email, password, course) VALUES (%s, %s, %s, %s)",
+        (name, email, hashed_password, "General")
     )
     conn.commit()
     new_user_id = cursor.lastrowid
@@ -55,15 +90,30 @@ def login():
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, name FROM users WHERE email=%s AND password=%s", (email, password))
+    cursor.execute("SELECT id, name, password FROM users WHERE email=%s", (email,))
     user = cursor.fetchone()
     cursor.close()
     conn.close()
 
     if user:
-        return jsonify({"success": True, "user_id": user[0], "name": user[1]})
-    else:
-        return jsonify({"success": False})
+        user_id, name, stored_password = user
+        # 1. Check if it's a valid hash
+        if check_password_hash(stored_password, password):
+            return jsonify({"success": True, "user_id": user_id, "name": name})
+        
+        # 2. Fallback for legacy plain-text passwords (migration logic)
+        if stored_password == password:
+            # Upgrade this user to hashed password immediately
+            new_hash = generate_password_hash(password)
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("UPDATE users SET password=%s WHERE id=%s", (new_hash, user_id))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return jsonify({"success": True, "user_id": user_id, "name": name})
+            
+    return jsonify({"success": False})
 
 @app.route('/api/track', methods=['POST'])
 def track_activity():
@@ -90,10 +140,36 @@ def track_activity():
                 (student_id, topic, time_spent)
             )
 
+        # Update Points and Streak
+        today = date.today()
+        cursor.execute("SELECT last_activity, streak_count, points FROM users WHERE id=%s", (student_id,))
+        user_data = cursor.fetchone()
+        
+        if user_data:
+            last_activity, streak, points = user_data
+            new_streak = streak
+            
+            if last_activity:
+                # If last activity was yesterday, increment streak
+                if last_activity == today - timedelta(days=1):
+                    new_streak += 1
+                # If last activity was before yesterday, reset streak
+                elif last_activity < today - timedelta(days=1):
+                    new_streak = 1
+            else:
+                new_streak = 1
+                
+            # Add points (e.g., 10 points for a study session)
+            new_points = (points or 0) + 10
+            cursor.execute(
+                "UPDATE users SET points=%s, streak_count=%s, last_activity=%s WHERE id=%s",
+                (new_points, new_streak, today, student_id)
+            )
+
         conn.commit()
         cursor.close()
         conn.close()
-        return jsonify({"message": "Activity tracked!"}), 200
+        return jsonify({"message": "Activity tracked!", "points_added": 10}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

@@ -7,6 +7,9 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(150) NOT NULL UNIQUE,
     course VARCHAR(100) NOT NULL,
     password VARCHAR(255) NOT NULL,
+    points INT DEFAULT 0,
+    streak_count INT DEFAULT 0,
+    last_activity DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -235,22 +235,19 @@ function Home() {
             academic journey with our minimal learning analytics system.
           </p>
 
-          {/* Feature Grid */}
+            {/* Feature Grid */}
           <div style={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
             gap: "20px",
           }}>
             {features.map((f, i) => (
-              <div key={i} style={{
+              <div key={i} className="glass-card animate-fade-in" style={{
                 padding: "24px",
-                backgroundColor: "var(--card-bg)",
-                borderRadius: "16px",
-                border: "1px solid var(--border-color)",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
                 display: "flex",
                 flexDirection: "column",
                 gap: "12px",
+                animationDelay: `${i * 0.1}s`
               }}>
                 <div style={{
                   width: "48px",
@@ -273,13 +270,10 @@ function Home() {
         </div>
 
         {/* RIGHT — Login / Register Card */}
-        <div style={{
+        <div className="glass-card animate-fade-in" style={{
           flex: "0 0 450px",
-          backgroundColor: "var(--card-bg)",
-          borderRadius: "20px",
-          border: "1px solid var(--border-color)",
           padding: "48px 40px",
-          boxShadow: "0 12px 50px rgba(0,0,0,0.12)",
+          animationDelay: "0.4s"
         }}>
           {/* Logo Icon inside Card */}
           <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px" }}>
@@ -289,7 +283,7 @@ function Home() {
           {/* Tabs */}
           <div style={{
             display: "flex",
-            backgroundColor: "var(--bg-color)",
+            backgroundColor: "var(--glass-bg)",
             borderRadius: "12px",
             padding: "5px",
             marginBottom: "36px",
@@ -306,8 +300,8 @@ function Home() {
                   border: "none",
                   cursor: "pointer",
                   fontSize: "15px",
-                  fontWeight: "600",
-                  transition: "all 0.2s",
+                  fontWeight: "700",
+                  transition: "all 0.3s",
                   backgroundColor: activeTab === tab ? "var(--accent-color)" : "transparent",
                   color: activeTab === tab ? "#0f172a" : "var(--text-secondary)",
                   textTransform: "capitalize",
@@ -321,9 +315,9 @@ function Home() {
           {/* LOGIN FORM */}
           {activeTab === "login" && (
             <div style={{ textAlign: "center" }}>
-              <h2 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "8px" }}>Welcome to Analytica</h2>
+              <h2 className="text-gradient" style={{ fontSize: "28px", marginBottom: "8px" }}>Welcome Back</h2>
               <p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "32px" }}>
-                Connect, analyze, and excel together.
+                Continue your learning journey.
               </p>
 
               <div style={{ marginBottom: "20px", textAlign: "left" }}>
@@ -333,7 +327,7 @@ function Home() {
                   placeholder="Enter your email"
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
-                  style={{...inputStyle, padding: "14px 16px", fontSize: "15px"}}
+                  style={{...inputStyle, padding: "14px 16px", fontSize: "15px", backgroundColor: "var(--glass-bg)", borderRadius: "12px"}}
                 />
               </div>
 
@@ -345,22 +339,17 @@ function Home() {
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                  style={{...inputStyle, padding: "14px 16px", fontSize: "15px"}}
+                  style={{...inputStyle, padding: "14px 16px", fontSize: "15px", backgroundColor: "var(--glass-bg)", borderRadius: "12px"}}
                 />
               </div>
 
               <button
                 onClick={handleLogin}
+                className="premium-btn"
                 style={{
                   width: "100%",
                   padding: "16px",
-                  backgroundColor: "var(--accent-color)",
-                  color: "#0f172a",
-                  border: "none",
-                  borderRadius: "10px",
                   fontSize: "16px",
-                  fontWeight: "700",
-                  cursor: "pointer",
                   marginBottom: "20px",
                 }}
               >
@@ -382,9 +371,9 @@ function Home() {
           {/* REGISTER FORM */}
           {activeTab === "register" && (
             <div style={{ textAlign: "center" }}>
-              <h2 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "8px" }}>Join Analytica</h2>
+              <h2 className="text-gradient" style={{ fontSize: "28px", marginBottom: "8px" }}>Join Analytica</h2>
               <p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "32px" }}>
-                Join thousands of students already studying together.
+                Start your data-driven study journey today.
               </p>
 
               <div style={{ marginBottom: "18px", textAlign: "left" }}>
@@ -434,16 +423,11 @@ function Home() {
 
               <button
                 onClick={handleRegister}
+                className="premium-btn"
                 style={{
                   width: "100%",
                   padding: "16px",
-                  backgroundColor: "var(--accent-color)",
-                  color: "#0f172a",
-                  border: "none",
-                  borderRadius: "10px",
                   fontSize: "16px",
-                  fontWeight: "700",
-                  cursor: "pointer",
                   marginBottom: "20px",
                 }}
               >

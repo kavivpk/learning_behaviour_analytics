@@ -119,28 +119,22 @@ function TopicPage() {
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-color)", color: "var(--text-main)" }}>
-      <div style={{
+      <div className="glass-card" style={{
         display: "flex", justifyContent: "space-between", alignItems: "center",
         padding: "16px 32px", backgroundColor: "var(--nav-bg)", borderBottom: "1px solid var(--border-color)",
-        position: "sticky", top: 0, zIndex: 100
+        position: "sticky", top: 10, zIndex: 100, margin: "10px 20px", borderRadius: "16px"
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }} onClick={() => navigate("/dashboard")}>
-          <span style={{ fontSize: "14px", fontWeight: "700", textTransform: "uppercase" }}>Learning: {name}</span>
+          <span className="text-gradient" style={{ fontSize: "16px", fontWeight: "800", textTransform: "uppercase" }}>Learning: {name}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
           <ThemeToggle />
-          <button onClick={() => navigate("/dashboard")} style={{
-            padding: "6px 16px", borderRadius: "6px", backgroundColor: "transparent",
-            color: "var(--text-main)", border: "1px solid var(--border-color)", fontWeight: "600",
-            fontSize: "12px", cursor: "pointer"
-          }}>
-            Dashboard
-          </button>
+          <button onClick={() => navigate("/dashboard")} className="premium-btn" style={{ padding: "8px 20px", fontSize: "12px" }}>Dashboard</button>
         </div>
       </div>
 
       <div style={{ maxWidth: "1000px", margin: "40px auto", padding: "0 20px", display: "grid", gridTemplateColumns: "250px 1fr", gap: "30px" }}>
-        <div style={{ padding: "20px", backgroundColor: "var(--card-bg)", borderRadius: "12px", border: "1px solid var(--border-color)", alignSelf: "start" }}>
+        <div className="glass-card animate-fade-in" style={{ padding: "20px", alignSelf: "start" }}>
           <h4 style={{ fontSize: "12px", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: "16px" }}>Sections</h4>
           <div style={{ display: "grid", gap: "8px" }}>
             {topicData.sections.map(s => (
@@ -160,7 +154,7 @@ function TopicPage() {
           </div>
         </div>
 
-        <div style={{ padding: "40px", backgroundColor: "var(--card-bg)", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
+        <div className="glass-card animate-fade-in" style={{ padding: "40px", animationDelay: "0.2s" }}>
           {activeSection ? (
             <div>
               <h2 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "20px" }}>
@@ -180,15 +174,16 @@ function TopicPage() {
             <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "16px" }}>
               Time Spent: {Math.floor(timeSpent/60)}m {timeSpent%60}s
             </p>
-            <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+            <div style={{ display: "flex", gap: "16px", justifyContent: "center" }}>
               <button 
                 onClick={handleFinishTopic} 
                 disabled={studiedSections.length === 0}
+                className={studiedSections.length > 0 ? "premium-btn" : ""}
                 style={{
-                  padding: "12px 24px", fontSize: "14px", fontWeight: "700", 
-                  backgroundColor: studiedSections.length > 0 ? "var(--accent-color)" : "var(--border-color)", 
-                  color: "#0f172a", border: "none",
-                  borderRadius: "8px", cursor: studiedSections.length > 0 ? "pointer" : "not-allowed"
+                  padding: "12px 24px", fontSize: "14px",
+                  backgroundColor: studiedSections.length > 0 ? "" : "var(--border-color)", 
+                  color: studiedSections.length > 0 ? "" : "var(--text-muted)", 
+                  cursor: studiedSections.length > 0 ? "pointer" : "not-allowed"
                 }}
               >
                 Generate AI Quiz
@@ -197,13 +192,14 @@ function TopicPage() {
                 href={topicData.w3url}
                 target="_blank"
                 rel="noreferrer"
+                className="glass-card"
                 style={{
-                  padding: "12px 24px", fontSize: "14px", fontWeight: "600",
-                  textDecoration: "none", color: "var(--text-main)", border: "1px solid var(--border-color)",
-                  borderRadius: "8px", display: "inline-block"
+                  padding: "12px 24px", fontSize: "14px", fontWeight: "700",
+                  textDecoration: "none", color: "var(--text-main)", 
+                  display: "inline-block"
                 }}
               >
-                Go to W3Schools ↗
+                External Reference ↗
               </a>
             </div>
           </div>

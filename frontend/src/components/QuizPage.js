@@ -12,6 +12,7 @@ export default function QuizPage() {
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
   const [selected, setSelected] = useState(null);
+  const [userAnswers, setUserAnswers] = useState([]);
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(true);
   const [aiQuestions, setAiQuestions] = useState([]);
@@ -103,6 +104,7 @@ export default function QuizPage() {
 
   const handleAnswer = (idx) => {
     setSelected(idx);
+    setUserAnswers([...userAnswers, idx]);
     const isCorrect = idx === questions[current]?.answer;
     if (isCorrect) setScore((prev) => prev + 1);
   };
@@ -146,9 +148,11 @@ export default function QuizPage() {
   if (loading) {
     return (
       <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-color)", display: "flex", justifyContent: "center", alignItems: "center" }}>
-        <div style={{ padding: "40px", backgroundColor: "var(--card-bg)", borderRadius: "12px", border: "1px solid var(--border-color)", textAlign: "center" }}>
-          <h2 style={{ fontSize: "18px", marginBottom: "8px" }}>Generating AI Quiz...</h2>
-          <p style={{ color: "var(--text-secondary)", fontSize: "14px" }}>Analying your study behavior for {name}.</p>
+        <div className="glass-card animate-fade-in" style={{ padding: "40px", textAlign: "center", maxWidth: "400px" }}>
+          <div style={{ width: "40px", height: "40px", border: "3px solid var(--accent-color)", borderTopColor: "transparent", borderRadius: "50%", margin: "0 auto 20px", animation: "spin 1s linear infinite" }}></div>
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          <h2 style={{ fontSize: "20px", marginBottom: "8px" }}>Generating AI Quiz...</h2>
+          <p style={{ color: "var(--text-secondary)", fontSize: "14px" }}>Analyzing your study behavior for {name}.</p>
         </div>
       </div>
     );
@@ -158,9 +162,9 @@ export default function QuizPage() {
   if (!selectedSection) {
     return (
       <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-color)", color: "var(--text-main)" }}>
-        <div style={{ padding: "16px 32px", borderBottom: "1px solid var(--border-color)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-           <span style={{ fontSize: "14px", fontWeight: "800" }}>{name.toUpperCase()} QUIZ SECTIONS</span>
-           <button onClick={() => navigate("/dashboard")} style={{ border: "none", background: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "12px" }}>Back to Dashboard</button>
+        <div className="glass-card" style={{ padding: "16px 32px", borderBottom: "1px solid var(--border-color)", display: "flex", justifyContent: "space-between", alignItems: "center", margin: "10px 20px", position: "sticky", top: 10, zIndex: 100 }}>
+           <span className="text-gradient" style={{ fontSize: "16px", letterSpacing: "0.1em" }}>{name.toUpperCase()} ASSESSMENT</span>
+           <button onClick={() => navigate("/dashboard")} className="premium-btn" style={{ padding: "8px 16px", fontSize: "12px" }}>Dashboard</button>
         </div>
         <div style={{ maxWidth: "800px", margin: "60px auto", padding: "0 20px" }}>
            <h2 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "8px" }}>Choose an Assessment Area</h2>
@@ -169,28 +173,29 @@ export default function QuizPage() {
            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "20px" }}>
               <button 
                 onClick={() => setSelectedSection("AI")}
+                className="glass-card"
                 style={{
-                  padding: "30px", borderRadius: "16px", border: "2px solid var(--accent-color)",
-                  backgroundColor: "rgba(56, 189, 248, 0.05)", textAlign: "left", cursor: "pointer"
+                  padding: "30px", border: "2px solid var(--accent-color)",
+                  textAlign: "left", cursor: "pointer"
                 }}
               >
-                 <span style={{ display: "block", fontSize: "11px", fontWeight: "900", color: "var(--accent-color)", textTransform: "uppercase", marginBottom: "10px" }}>Most Advanced</span>
-                 <h3 style={{ fontSize: "18px", fontWeight: "700", color: "var(--text-main)" }}>AI Performance Quiz</h3>
-                 <p style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "10px" }}>Based on your recent study behavior.</p>
+                 <span style={{ display: "block", fontSize: "11px", fontWeight: "900", color: "var(--accent-color)", textTransform: "uppercase", marginBottom: "10px" }}>Dynamic Analysis</span>
+                 <h3 style={{ fontSize: "20px", fontWeight: "800", color: "var(--text-main)" }}>AI Performance Quiz</h3>
+                 <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "10px" }}>Custom questions generated from your study session.</p>
               </button>
 
               {sections.map(s => (
                 <button 
                   key={s}
                   onClick={() => setSelectedSection(s)}
+                  className="glass-card"
                   style={{
-                    padding: "30px", borderRadius: "16px", border: "1px solid var(--border-color)",
-                    backgroundColor: "var(--card-bg)", textAlign: "left", cursor: "pointer", transition: "transform 0.2s"
+                    padding: "30px", textAlign: "left", cursor: "pointer"
                   }}
                 >
-                   <span style={{ display: "block", fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "10px" }}>Static Assessment</span>
-                   <h3 style={{ fontSize: "18px", fontWeight: "700", color: "var(--text-main)" }}>{s}</h3>
-                   <p style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "10px" }}>Standard level questions.</p>
+                   <span style={{ display: "block", fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "10px" }}>Standard Module</span>
+                   <h3 style={{ fontSize: "20px", fontWeight: "800", color: "var(--text-main)" }}>{s}</h3>
+                   <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "10px" }}>Foundational technical questions.</p>
                 </button>
               ))}
            </div>
@@ -201,22 +206,17 @@ export default function QuizPage() {
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-color)", color: "var(--text-main)" }}>
-      <div style={{
+      <div className="glass-card" style={{
         display: "flex", justifyContent: "space-between", alignItems: "center",
         padding: "16px 32px", backgroundColor: "var(--nav-bg)", borderBottom: "1px solid var(--border-color)",
+        position: "sticky", top: 10, zIndex: 100, margin: "10px 20px", borderRadius: "16px"
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }} onClick={() => navigate("/dashboard")}>
-          <span style={{ fontSize: "14px", fontWeight: "700", textTransform: "uppercase" }}>Quiz Portal</span>
+          <span className="text-gradient" style={{ fontSize: "16px", fontWeight: "800", textTransform: "uppercase" }}>Quiz Portal</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
           <ThemeToggle />
-          <button onClick={() => navigate("/dashboard")} style={{
-            padding: "6px 16px", borderRadius: "6px", backgroundColor: "transparent",
-            color: "var(--text-main)", border: "1px solid var(--border-color)", fontWeight: "600",
-            fontSize: "12px", cursor: "pointer"
-          }}>
-            Dashboard
-          </button>
+          <button onClick={() => navigate("/dashboard")} className="premium-btn" style={{ padding: "8px 20px", fontSize: "12px" }}>Dashboard</button>
         </div>
       </div>
 
@@ -224,10 +224,10 @@ export default function QuizPage() {
         {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
         {questions.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "60px", backgroundColor: "var(--card-bg)", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
-            <h2 style={{ fontSize: "20px", marginBottom: "16px" }}>All Completed!</h2>
-            <p style={{ color: "var(--text-secondary)", marginBottom: "20px" }}>You have answered all standard questions for <b>{selectedSection || name}</b>. Would you like AI to generate new ones for you?</p>
-            <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+          <div className="glass-card animate-fade-in" style={{ textAlign: "center", padding: "60px" }}>
+            <h2 style={{ fontSize: "24px", marginBottom: "16px" }}>All Completed!</h2>
+            <p style={{ color: "var(--text-secondary)", marginBottom: "32px" }}>You have mastered all standard questions for <b>{selectedSection || name}</b>. Ready for an AI challenge?</p>
+            <div style={{ display: "flex", gap: "16px", justifyContent: "center" }}>
                <button 
                 onClick={async () => {
                   try {
@@ -253,26 +253,50 @@ export default function QuizPage() {
                     setLoading(false);
                   }
                 }}
-                style={{ padding: "10px 24px", borderRadius: "8px", border: "none", backgroundColor: "var(--accent-color)", color: "#0f172a", fontWeight: "700", cursor: "pointer" }}
+                className="premium-btn"
               >
-                Generate 5 New Questions with AI
+                Generate AI Quiz
               </button>
               <button 
                 onClick={() => navigate("/dashboard")} 
-                style={{ padding: "10px 24px", borderRadius: "8px", border: "1px solid var(--border-color)", backgroundColor: "transparent", color: "var(--text-main)", fontWeight: "600", cursor: "pointer" }}
+                className="glass-card"
+                style={{ padding: "12px 24px", fontSize: "14px", fontWeight: "700", cursor: "pointer" }}
               >
-                Back to Dashboard
+                Back home
               </button>
             </div>
           </div>
         ) : finished ? (
-          <div style={{ textAlign: "center", padding: "60px 40px", backgroundColor: "var(--card-bg)", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
-            <h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "32px" }}>Evaluation Complete: {name}</h2>
-            <div style={{ fontSize: "64px", fontWeight: "800", marginBottom: "16px", color: "var(--accent-color)" }}>
-              {score}/{questions.length}
+          <div className="animate-fade-in" style={{ padding: "20px" }}>
+            <div className="glass-card" style={{ textAlign: "center", padding: "60px 40px", marginBottom: "32px" }}>
+              <h2 className="text-gradient" style={{ fontSize: "24px", marginBottom: "32px" }}>Evaluation Complete</h2>
+              <div style={{ fontSize: "72px", fontWeight: "800", marginBottom: "16px", color: "var(--accent-color)" }}>
+                {score}/{questions.length}
+              </div>
+              <p style={{ color: "var(--text-secondary)", marginBottom: "40px", fontSize: "14px" }}>Behavior mapping shows you are {score === questions.length ? "Mastering" : "Progressing"} in this area.</p>
+              <button onClick={() => navigate("/dashboard")} className="premium-btn" style={{ padding: "12px 48px" }}>Finish Assessment</button>
             </div>
-            <p style={{ color: "var(--text-secondary)", marginBottom: "40px" }}>Performance analysis generated by AI behavior mapping.</p>
-            <button onClick={() => navigate("/dashboard")} style={{ padding: "12px 32px", borderRadius: "8px", border: "none", backgroundColor: "var(--accent-color)", color: "#0f172a", fontWeight: "600", fontSize: "14px", cursor: "pointer" }}>Done</button>
+
+            <h3 style={{ fontSize: "18px", fontWeight: "800", marginBottom: "24px", color: "var(--text-main)" }}>Performance Review</h3>
+            <div style={{ display: "grid", gap: "16px" }}>
+              {questions.map((q, idx) => (
+                <div key={idx} className="glass-card" style={{ padding: "24px", borderLeft: `4px solid ${userAnswers[idx] === q.answer ? "var(--accent-secondary)" : "#f87171"}` }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px" }}>
+                    <span style={{ fontSize: "11px", fontWeight: "800", color: "var(--text-muted)" }}>QUESTION {idx + 1}</span>
+                    <span style={{ fontSize: "11px", fontWeight: "800", color: userAnswers[idx] === q.answer ? "var(--accent-secondary)" : "#f87171" }}>
+                      {userAnswers[idx] === q.answer ? "CORRECT" : "INCORRECT"}
+                    </span>
+                  </div>
+                  <p style={{ fontSize: "15px", fontWeight: "600", marginBottom: "16px", color: "var(--text-main)" }}>{q.question}</p>
+                  <div style={{ fontSize: "13px" }}>
+                    <div style={{ color: "var(--accent-secondary)", fontWeight: "700", marginBottom: "4px" }}>Correct Answer: {q.options[q.answer]}</div>
+                    {userAnswers[idx] !== q.answer && (
+                      <div style={{ color: "#f87171" }}>Your Answer: {q.options[userAnswers[idx]]}</div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           <div>
@@ -285,8 +309,8 @@ export default function QuizPage() {
               <div style={{ width: `${((current + 1) / questions.length) * 100}%`, height: "100%", backgroundColor: "var(--accent-color)" }} />
             </div>
 
-            <div style={{ padding: "40px", backgroundColor: "var(--card-bg)", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
-              <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "32px", lineHeight: "1.5" }}>{questions[current]?.question}</h3>
+            <div className="glass-card animate-fade-in" style={{ padding: "40px" }}>
+              <h3 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "32px", lineHeight: "1.6" }}>{questions[current]?.question}</h3>
               <div style={{ display: "grid", gap: "12px" }}>
                 {questions[current]?.options.map((opt, idx) => {
                   let borderColor = "var(--border-color)";
@@ -312,8 +336,8 @@ export default function QuizPage() {
               </div>
 
               {selected !== null && (
-                <button onClick={handleNext} style={{ marginTop: "32px", width: "100%", padding: "14px", borderRadius: "8px", backgroundColor: "var(--accent-color)", color: "#0f172a", border: "none", fontWeight: "700", fontSize: "14px", cursor: "pointer" }}>
-                  {current + 1 < questions.length ? "Confirm Answer" : "See Analysis"}
+                <button onClick={handleNext} className="premium-btn" style={{ marginTop: "32px", width: "100%", padding: "14px" }}>
+                  {current + 1 < questions.length ? "Continue Assessment" : "Generate Analysis"}
                 </button>
               )}
             </div>

@@ -78,7 +78,7 @@ const topics = [
 
 function Dashboard() {
   const navigate = useNavigate();
-  const [analyticsData, setAnalyticsData] = useState(null);
+  const [analyticsData, setAnalyticsData] = useState({ topic_stats: [], streak: 0, points: 0 });
   const [toast, setToast] = useState(null);
   const studentId = localStorage.getItem("student_id") || localStorage.getItem("user_id");
   const studentName = localStorage.getItem("student_name");
@@ -89,6 +89,24 @@ function Dashboard() {
 
   const showToast = (message, type) => {
     setToast({ message, type });
+  };
+
+  const formatTime = (totalSeconds) => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = Math.floor(totalSeconds % 60);
+    
+    let result = "";
+    if (hours > 0) result += `${hours}h `;
+    if (minutes > 0 || hours > 0) result += `${minutes}m `;
+    result += `${seconds}s`;
+    return result;
+  };
+
+  const getKnowledgeLevel = (score) => {
+    if (score >= 80) return "Advanced / Master";
+    if (score >= 50) return "Intermediate / Proficient";
+    return "Beginner / Learning";
   };
 
   const fetchData = () => {
@@ -147,7 +165,19 @@ function Dashboard() {
   const barOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: { backgroundColor: "#1e293b", padding: 12, titleFont: { size: 14 } } },
+    plugins: { 
+      legend: { display: false }, 
+      tooltip: { 
+        backgroundColor: "#1e293b", 
+        padding: 12, 
+        titleFont: { size: 14 },
+        callbacks: {
+          label: (context) => {
+            return `Time: ${formatTime(context.raw)}`;
+          }
+        }
+      } 
+    },
     scales: {
       x: { ticks: { color: getThemeTextColor(), font: { size: 10, weight: "600" } }, grid: { display: false } },
       y: { beginAtZero: true, ticks: { color: getThemeTextColor(), font: { size: 10 } }, grid: { color: "rgba(0,0,0,0.05)", borderDash: [4, 4] } },
@@ -160,9 +190,14 @@ function Dashboard() {
     plugins: { legend: { display: false } },
     scales: {
       x: { ticks: { color: getThemeTextColor(), font: { size: 10 } }, grid: { display: false } },
-      y: { ticks: { color: getThemeTextColor(), font: { size: 10 } }, grid: { color: "rgba(0,0,0,0.05)" } },
+      y: { 
+        min: 0, 
+        max: 100,
+        ticks: { color: getThemeTextColor(), font: { size: 10 }, stepSize: 20 }, 
+        grid: { color: "rgba(0,0,0,0.05)" } 
+      },
     },
-    elements: { line: { tension: 0.4 }, point: { radius: 0 } },
+    elements: { line: { tension: 0.4, borderColor: "var(--accent-color)" }, point: { radius: 4, backgroundColor: "var(--accent-color)" } },
   };
 
   return (
@@ -170,43 +205,70 @@ function Dashboard() {
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       {/* HEADER */}
-      <div style={{
+      <div className="glass-card no-print" style={{
         display: "flex", justifyContent: "space-between", alignItems: "center",
         padding: "16px 32px", backgroundColor: "var(--nav-bg)", borderBottom: "1px solid var(--border-color)",
-        position: "sticky", top: 0, zIndex: 100,
+        position: "sticky", top: 10, zIndex: 100, margin: "10px 20px", borderRadius: "16px"
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "var(--accent-color)" }}></div>
-          <span style={{ fontSize: "14px", fontWeight: "800", textTransform: "uppercase", letterSpacing: "0.15em" }}>ANALYTICA</span>
+          <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: "var(--accent-gradient)" }}></div>
+          <span className="text-gradient" style={{ fontSize: "16px", letterSpacing: "0.15em" }}>ANALYTICA</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "15px", marginRight: "20px" }}>
+             <div className="glass-card" style={{ padding: "6px 15px", borderRadius: "12px", fontSize: "13px", fontWeight: "700", display: "flex", alignItems: "center", gap: "8px" }}>
+                <span style={{ color: "#f59e0b", fontSize: "16px" }}>●</span> {analyticsData?.streak || 0} Day Streak
+             </div>
+             <div className="glass-card" style={{ padding: "6px 15px", borderRadius: "12px", fontSize: "13px", fontWeight: "700", display: "flex", alignItems: "center", gap: "8px" }}>
+                <span style={{ color: "#38bdf8", fontSize: "16px" }}>◆</span> {analyticsData?.points || 0} Pts
+             </div>
+          </div>
           <ThemeToggle />
           <span style={{ color: "var(--text-secondary)", fontSize: "13px", fontWeight: "600" }}>{studentName}</span>
-          <button onClick={handleLogout} style={{
-            padding: "8px 20px", borderRadius: "10px", border: "1px solid var(--border-color)",
-            backgroundColor: "var(--card-bg)", color: "var(--text-main)", fontSize: "12px", fontWeight: "700", cursor: "pointer",
-          }}>Logout</button>
+          <button onClick={() => window.print()} className="glass-card" style={{ padding: "8px 16px", fontSize: "12px", fontWeight: "700", cursor: "pointer", border: "1px solid var(--accent-color)", color: "var(--accent-color)", backgroundColor: "transparent" }}>Download Report</button>
+          <button onClick={handleLogout} className="premium-btn" style={{ padding: "8px 20px", fontSize: "12px" }}>Logout</button>
         </div>
       </div>
 
-      <div style={{ padding: "32px", maxWidth: "1400px", margin: "0 auto" }}>
+      <div className="no-print" style={{ padding: "0 20px 40px", maxWidth: "1400px", margin: "0 auto" }}>
         
-        {/* ANALYTICS SECTION TOP */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(450px, 1fr))", gap: "24px", marginBottom: "40px" }}>
+        {/* WELCOME SECTION */}
+        <div style={{ marginBottom: "40px", marginTop: "20px", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+           <div>
+              <h2 style={{ fontSize: "28px", fontWeight: "800", marginBottom: "8px" }}>Welcome back, {studentName.split(' ')[0]}!</h2>
+              <p style={{ color: "var(--text-secondary)", fontSize: "14px" }}>Here's what's happening with your learning profile today.</p>
+           </div>
+           <div className="glass-card" style={{ padding: "12px 20px", display: "flex", alignItems: "center", gap: "12px" }}>
+              <div style={{ textAlign: "right" }}>
+                 <div style={{ fontSize: "10px", fontWeight: "800", color: "var(--text-muted)", textTransform: "uppercase" }}>Current Goal</div>
+                 <div style={{ fontSize: "13px", fontWeight: "700" }}>30m Study / Day</div>
+              </div>
+              <div style={{ width: "40px", height: "40px", borderRadius: "50%", border: "3px solid var(--accent-color)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: "800" }}>
+                 45%
+              </div>
+           </div>
+        </div>
+
+        {/* TOP SECTION: ANALYTICS & COACH (SIDE-BY-SIDE) */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "32px", marginBottom: "48px" }}>
+          
+          {/* LEFT COLUMN: CHARTS */}
+          <div style={{ flex: "2 1 700px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "24px", marginBottom: "24px" }}>
           
           {/* BAR CHART */}
-          <div style={{ padding: "28px", backgroundColor: "var(--card-bg)", borderRadius: "20px", border: "1px solid var(--border-color)", boxShadow: "0 4px 20px rgba(0,0,0,0.02)" }}>
+          <div className="glass-card animate-fade-in" style={{ padding: "28px" }}>
             <div style={{ marginBottom: "24px" }}>
               <h4 style={{ fontSize: "12px", fontWeight: "800", textTransform: "uppercase", color: "var(--accent-color)", letterSpacing: "0.1em" }}>Learning distribution</h4>
-              <p style={{ fontSize: "11px", color: "var(--text-muted)" }}>Time spent per topic (seconds)</p>
+              <p style={{ fontSize: "11px", color: "var(--text-muted)" }}>Time spent per topic</p>
             </div>
-            <div style={{ height: "240px" }}>
-              {analyticsData && (
+            <div style={{ height: "240px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {analyticsData?.topic_stats?.length > 0 ? (
                 <Bar 
                   data={{
-                    labels: analyticsData.topic_stats.map(t => t.lesson_name),
+                    labels: analyticsData?.topic_stats?.map(t => t.lesson_name) || [],
                     datasets: [{
-                      data: analyticsData.topic_stats.map(t => t.total_time),
+                      data: analyticsData?.topic_stats?.map(t => t.total_time) || [],
                       backgroundColor: "rgba(56, 189, 248, 0.6)",
                       hoverBackgroundColor: "rgba(56, 189, 248, 0.9)",
                       borderRadius: 6,
@@ -214,23 +276,28 @@ function Dashboard() {
                   }} 
                   options={barOptions} 
                 />
+              ) : (
+                <div style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "13px" }}>
+                   <div style={{ fontSize: "24px", marginBottom: "8px" }}>📊</div>
+                   Select a course below to start tracking your progress
+                </div>
               )}
             </div>
           </div>
 
           {/* LINE CHART */}
-          <div style={{ padding: "28px", backgroundColor: "var(--card-bg)", borderRadius: "20px", border: "1px solid var(--border-color)", boxShadow: "0 4px 20px rgba(0,0,0,0.02)" }}>
+          <div className="glass-card animate-fade-in" style={{ padding: "28px", animationDelay: "0.2s" }}>
             <div style={{ marginBottom: "24px" }}>
               <h4 style={{ fontSize: "12px", fontWeight: "800", textTransform: "uppercase", color: "var(--accent-color)", letterSpacing: "0.1em" }}>Performance Trend</h4>
               <p style={{ fontSize: "11px", color: "var(--text-muted)" }}>Quiz accuracy over time</p>
             </div>
-            <div style={{ height: "240px" }}>
-              {analyticsData && (
+            <div style={{ height: "240px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {analyticsData?.topic_stats?.filter(t => t.avg_score > 0).length > 0 ? (
                 <Line 
                   data={{
-                    labels: analyticsData.topic_stats.map(t => t.lesson_name),
+                    labels: analyticsData?.topic_stats?.filter(t => t.avg_score > 0).map(t => t.lesson_name) || [],
                     datasets: [{
-                      data: analyticsData.topic_stats.map(t => t.quiz_score || 0),
+                      data: analyticsData?.topic_stats?.filter(t => t.avg_score > 0).map(t => t.avg_score) || [],
                       borderColor: "rgba(45, 212, 191, 1)",
                       backgroundColor: "rgba(45, 212, 191, 0.1)",
                       fill: true,
@@ -239,37 +306,141 @@ function Dashboard() {
                   }} 
                   options={lineOptions} 
                 />
+              ) : (
+                <div style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "13px" }}>
+                   <div style={{ fontSize: "24px", marginBottom: "8px" }}>📈</div>
+                   Complete a quiz to see your performance trend
+                </div>
               )}
             </div>
           </div>
 
         </div>
+        {/* close charts grid */}
+      </div>
+        {/* close LEFT COLUMN */}
+
+          {/* RIGHT COLUMN: AI COACH & ACTIVITY */}
+          <div style={{ flex: "1 1 350px", display: "flex", flexDirection: "column", gap: "24px" }}>
+
+             {/* AI COACH CARD */}
+             <div className="glass-card animate-fade-in" style={{ padding: "24px", background: "linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))", border: "1px solid rgba(139, 92, 246, 0.2)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
+                   <div style={{ display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent-color)" }}>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path><line x1="8" y1="16" x2="8" y2="16"></line><line x1="16" y1="16" x2="16" y2="16"></line></svg>
+                   </div>
+                   <h4 style={{ fontSize: "15px", fontWeight: "800" }}>AI Personal Coach</h4>
+                </div>
+                <p style={{ fontSize: "13px", color: "var(--text-main)", lineHeight: "1.6", marginBottom: "20px" }}>
+                   "Based on your <b>{analyticsData?.most_studied || 'recent'}</b> activity, you're making great progress!
+                   I recommend taking a quiz in <b>{analyticsData?.difficult_topics?.[0] || 'CSS'}</b> to strengthen your weak areas."
+                </p>
+                <button className="premium-btn" style={{ width: "100%", padding: "10px", fontSize: "12px" }}>Get AI Recommendations</button>
+             </div>
+
+             {/* STATS BREAKDOWN */}
+             <div className="glass-card animate-fade-in" style={{ padding: "24px", animationDelay: "0.2s" }}>
+                <h4 style={{ fontSize: "14px", fontWeight: "800", marginBottom: "20px" }}>Quick Insights</h4>
+                <div style={{ display: "grid", gap: "16px" }}>
+                   {[
+                     { label: "Focus Intensity", value: "High", color: "#10b981" },
+                     { label: "Retention Rate", value: "84%", color: "#3b82f6" },
+                     { label: "Consistency", value: "9/10", color: "#f59e0b" }
+                   ].map((stat, i) => (
+                     <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{stat.label}</span>
+                        <span style={{ fontSize: "13px", fontWeight: "700", color: stat.color }}>{stat.value}</span>
+                     </div>
+                   ))}
+                </div>
+             </div>
+
+             {/* RECENT BADGES */}
+             <div className="glass-card animate-fade-in" style={{ padding: "24px", animationDelay: "0.4s" }}>
+                <h4 style={{ fontSize: "14px", fontWeight: "800", marginBottom: "20px" }}>Achievements</h4>
+                <div style={{ display: "flex", gap: "12px" }}>
+                   <div title="Fast Learner" style={{ width: "45px", height: "45px", borderRadius: "12px", backgroundColor: "rgba(245, 158, 11, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(245, 158, 11, 0.2)" }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                   </div>
+                   <div title="Night Owl" style={{ width: "45px", height: "45px", borderRadius: "12px", backgroundColor: "rgba(139, 92, 246, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(139, 92, 246, 0.2)" }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                   </div>
+                   <div title="Streak Master" style={{ width: "45px", height: "45px", borderRadius: "12px", backgroundColor: "rgba(59, 130, 246, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(59, 130, 246, 0.2)" }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path></svg>
+                   </div>
+                </div>
+             </div>
+          </div>
+        </div>
+        {/* END FLEX ROW */}
 
         {/* METRICS ROW */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "24px", marginBottom: "48px" }}>
-          <div style={{ padding: "24px", backgroundColor: "var(--card-bg)", borderRadius: "16px", border: "1px solid var(--border-color)", borderLeft: "4px solid var(--accent-color)" }}>
+          <div className="glass-card animate-fade-in" style={{ padding: "24px", borderLeftWidth: "4px", borderLeftStyle: "solid", borderLeftColor: "var(--accent-color)", animationDelay: "0.3s" }}>
             <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "700", textTransform: "uppercase" }}>Mastery Score</span>
             <h2 style={{ fontSize: "28px", fontWeight: "800", marginTop: "8px" }}>{analyticsData?.avg_score || 0}%</h2>
           </div>
-          <div style={{ padding: "24px", backgroundColor: "var(--card-bg)", borderRadius: "16px", border: "1px solid var(--border-color)", borderLeft: "4px solid #2dd4bf" }}>
+          <div className="glass-card animate-fade-in" style={{ padding: "24px", borderLeftWidth: "4px", borderLeftStyle: "solid", borderLeftColor: "#2dd4bf", animationDelay: "0.35s" }}>
             <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "700", textTransform: "uppercase" }}>Learning Efficiency</span>
             <h2 style={{ fontSize: "28px", fontWeight: "800", marginTop: "8px" }}>{analyticsData?.overall_efficiency || 0} pts/m</h2>
           </div>
-          <div style={{ padding: "24px", backgroundColor: "var(--card-bg)", borderRadius: "16px", border: "1px solid var(--border-color)", borderLeft: "4px solid #f59e0b" }}>
+          <div className="glass-card animate-fade-in" style={{ padding: "24px", borderLeftWidth: "4px", borderLeftStyle: "solid", borderLeftColor: "#f59e0b", animationDelay: "0.4s" }}>
             <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "700", textTransform: "uppercase" }}>Engagement Level</span>
             <h2 style={{ fontSize: "28px", fontWeight: "800", marginTop: "8px" }}>{analyticsData?.engagement_level || "Analyzing..."}</h2>
           </div>
-          <div style={{ padding: "24px", backgroundColor: "var(--card-bg)", borderRadius: "16px", border: "1px solid var(--border-color)", borderLeft: "4px solid #a855f7" }}>
+          <div className="glass-card animate-fade-in" style={{ padding: "24px", borderLeftWidth: "4px", borderLeftStyle: "solid", borderLeftColor: "#a855f7", animationDelay: "0.45s" }}>
             <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "700", textTransform: "uppercase" }}>Dominant Skill</span>
             <h2 style={{ fontSize: "22px", fontWeight: "800", marginTop: "8px" }}>{analyticsData?.most_studied || "N/A"}</h2>
           </div>
+        </div>
+
+        {/* OVERALL PROGRESS */}
+        <div className="glass-card animate-fade-in" style={{ padding: "32px", marginBottom: "48px", animationDelay: "0.5s" }}>
+           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+              <div>
+                 <h3 style={{ fontSize: "18px", fontWeight: "800" }}>Your Learning Journey</h3>
+                 <p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>Overall mastery across all enrolled modules</p>
+              </div>
+              <div style={{ fontSize: "24px", fontWeight: "800", color: "var(--accent-color)" }}>{analyticsData?.avg_score || 0}%</div>
+           </div>
+           <div style={{ width: "100%", height: "8px", backgroundColor: "var(--input-bg)", borderRadius: "4px", overflow: "hidden" }}>
+              <div style={{ width: `${analyticsData?.avg_score || 0}%`, height: "100%", background: "var(--accent-gradient)", transition: "width 1s ease-out" }}></div>
+           </div>
+        </div>
+
+        {/* BOTTOM SECTION: PATHS & MODULES (FULL WIDTH) */}
+        <div style={{ marginTop: "40px" }}>
+        
+        {/* CURATED PATHS */}
+        <h3 style={{ fontSize: "18px", fontWeight: "800", marginBottom: "24px", color: "var(--text-main)" }}>Curated Learning Paths</h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "24px", marginBottom: "60px" }}>
+           {[
+             { name: "Frontend Architecture", icon: "🌐", items: ["HTML", "CSS", "JavaScript", "React", "Bootstrap", "TypeScript"], color: "#3b82f6" },
+             { name: "Backend & Systems", icon: "⚙️", items: ["Python", "Node.js", "Java", "C", "C++", "C#", "SQL", "PostgreSQL"], color: "#10b981" },
+             { name: "Data Science & AI", icon: "🧠", items: ["Python", "NumPy", "Pandas", "AI", "Gen AI", "MySQL", "R"], color: "#8b5cf6" }
+           ].map((path, idx) => (
+             <div key={idx} className="glass-card animate-fade-in" style={{ padding: "28px", borderTop: `4px solid ${path.color}`, animationDelay: `${0.6 + (idx * 0.1)}s` }}>
+                <div style={{ fontSize: "32px", marginBottom: "16px" }}>{path.icon}</div>
+                <h4 style={{ fontSize: "18px", fontWeight: "800", marginBottom: "8px" }}>{path.name}</h4>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "16px" }}>
+                   {path.items.map(item => (
+                     <span key={item} onClick={() => {
+                        const t = topics.find(tp => tp.name === item);
+                        if (t) navigate(`/topic/${t.name}`);
+                     }} style={{ padding: "4px 10px", backgroundColor: "var(--input-bg)", borderRadius: "6px", fontSize: "11px", fontWeight: "700", cursor: "pointer", border: "1px solid var(--border-color)" }}>
+                        {item}
+                     </span>
+                   ))}
+                </div>
+             </div>
+           ))}
         </div>
 
         {/* ALERTS SECTION */}
         {analyticsData?.difficult_topics?.length > 0 && (
           <div style={{ marginBottom: "48px", padding: "24px", backgroundColor: "rgba(239, 68, 68, 0.05)", borderRadius: "16px", border: "1px solid rgba(239, 68, 68, 0.2)" }}>
              <h4 style={{ color: "#ef4444", fontSize: "14px", fontWeight: "800", marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
-                <span>⚠</span> ACTION REQUIRED: PERFORMANCE STRUGGLE DETECTED
+                <span style={{ fontSize: "18px" }}>▲</span> ACTION REQUIRED: PERFORMANCE STRUGGLE DETECTED
              </h4>
              <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "16px" }}>The following areas show high study time but low retention. We recommend re-visiting the theory or taking a targeted AI quiz.</p>
              <div style={{ display: "flex", gap: "8px" }}>
@@ -281,9 +452,9 @@ function Dashboard() {
         )}
 
         {/* TOPICS GRID */}
-        <div style={{ marginBottom: "32px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-          <h3 style={{ fontSize: "18px", fontWeight: "800" }}>Curated Learning Paths</h3>
-          <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>Explore {topics.length} specialized modules</span>
+        <div style={{ marginBottom: "32px", marginTop: "60px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+          <h3 style={{ fontSize: "18px", fontWeight: "800" }}>Explore All Modules</h3>
+          <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>{topics.length} specialized modules available</span>
         </div>
 
         <div style={{
@@ -296,10 +467,11 @@ function Dashboard() {
             if (stats?.status === "Struggling") statusColor = "#ef4444";
 
             return (
-              <div key={index} style={{
-                backgroundColor: "var(--card-bg)", borderRadius: "16px", border: "1px solid var(--border-color)", padding: "20px",
-                display: "flex", flexDirection: "column", gap: "16px", transition: "transform 0.2s",
-                position: "relative", overflow: "hidden"
+              <div key={index} className="glass-card animate-fade-in" style={{
+                padding: "20px",
+                display: "flex", flexDirection: "column", gap: "16px",
+                position: "relative", overflow: "hidden",
+                animationDelay: `${0.4 + (index * 0.05)}s`
               }}>
                 {stats && (
                     <div style={{ position: "absolute", top: 0, right: 0, padding: "4px 10px", backgroundColor: statusColor, color: "#fff", fontSize: "9px", fontWeight: "900", textTransform: "uppercase" }}>
@@ -325,6 +497,94 @@ function Dashboard() {
           })}
         </div>
       </div>
+      </div>
+      {/* END no-print wrapper */}
+
+      {/* FLOATING STUDY TIMER */}
+      <div className="glass-card no-print" style={{ 
+        position: "fixed", bottom: "30px", right: "30px", 
+        padding: "12px 24px", display: "flex", alignItems: "center", gap: "12px",
+        boxShadow: "0 10px 30px rgba(0,0,0,0.2)", border: "1px solid var(--accent-color)",
+        zIndex: 1000
+      }}>
+         <div style={{ width: "10px", height: "10px", borderRadius: "50%", backgroundColor: "var(--accent-secondary)", animation: "pulse 2s infinite" }}></div>
+         <span style={{ fontSize: "12px", fontWeight: "800", letterSpacing: "0.05em" }}>SESSION ACTIVE</span>
+      </div>
+      {/* HIDDEN PRINT-ONLY REPORT */}
+      <div id="printable-report" className="print-only">
+        <div style={{ textAlign: "center", marginBottom: "40px", borderBottom: "2px solid #333", paddingBottom: "20px" }}>
+           <h1 style={{ fontSize: "28px", margin: "0 0 10px 0", color: "#333" }}>LEARNING BEHAVIOUR ANALYTICS REPORT</h1>
+           <p style={{ fontSize: "16px", color: "#666" }}>Student: <b>{studentName}</b> | Date: {new Date().toLocaleDateString()}</p>
+        </div>
+
+        <div style={{ display: "flex", gap: "20px", marginBottom: "40px" }}>
+           <div style={{ flex: 1, padding: "20px", border: "1px solid #ddd", borderRadius: "8px" }}>
+              <div style={{ fontSize: "12px", color: "#666", textTransform: "uppercase" }}>Overall Mastery</div>
+              <div style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>{analyticsData?.avg_score || 0}%</div>
+           </div>
+           <div style={{ flex: 1, padding: "20px", border: "1px solid #ddd", borderRadius: "8px" }}>
+              <div style={{ fontSize: "12px", color: "#666", textTransform: "uppercase" }}>Knowledge Level</div>
+              <div style={{ fontSize: "20px", fontWeight: "bold", color: "#333" }}>{getKnowledgeLevel(analyticsData?.avg_score || 0)}</div>
+           </div>
+           <div style={{ flex: 1, padding: "20px", border: "1px solid #ddd", borderRadius: "8px" }}>
+              <div style={{ fontSize: "12px", color: "#666", textTransform: "uppercase" }}>Study Streak</div>
+              <div style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>{analyticsData?.streak || 0} Days</div>
+           </div>
+        </div>
+
+        <h3 style={{ borderBottom: "1px solid #eee", paddingBottom: "10px", marginBottom: "20px", color: "#333" }}>Module Activity Breakdown</h3>
+        <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "40px" }}>
+           <thead>
+              <tr style={{ backgroundColor: "#f9f9f9" }}>
+                 <th style={{ textAlign: "left", padding: "12px", borderBottom: "2px solid #ddd", color: "#333" }}>Topic Name</th>
+                 <th style={{ textAlign: "center", padding: "12px", borderBottom: "2px solid #ddd", color: "#333" }}>Time Spent</th>
+                 <th style={{ textAlign: "center", padding: "12px", borderBottom: "2px solid #ddd", color: "#333" }}>Quiz Score</th>
+                 <th style={{ textAlign: "right", padding: "12px", borderBottom: "2px solid #ddd", color: "#333" }}>Status</th>
+              </tr>
+           </thead>
+           <tbody>
+              {analyticsData?.topic_stats?.map((topic, i) => (
+                <tr key={i}>
+                   <td style={{ padding: "12px", borderBottom: "1px solid #eee", color: "#444" }}>{topic.lesson_name}</td>
+                   <td style={{ padding: "12px", borderBottom: "1px solid #eee", textAlign: "center", color: "#444" }}>{formatTime(topic.total_time)}</td>
+                   <td style={{ padding: "12px", borderBottom: "1px solid #eee", textAlign: "center", color: "#444" }}>{topic.avg_score}%</td>
+                   <td style={{ padding: "12px", borderBottom: "1px solid #eee", textAlign: "right", fontWeight: "bold", color: "#333" }}>{topic.status}</td>
+                </tr>
+              ))}
+           </tbody>
+        </table>
+
+        <h3 style={{ borderBottom: "1px solid #eee", paddingBottom: "10px", marginBottom: "20px", color: "#333" }}>AI Learning Recommendations</h3>
+        <div style={{ padding: "20px", backgroundColor: "#f4f7ff", borderRadius: "8px", borderLeft: "4px solid #3b82f6" }}>
+           <p style={{ margin: 0, lineHeight: "1.6", color: "#333" }}>
+              Based on the analytics, the student shows strong proficiency in <b>{analyticsData?.most_studied || "General Subjects"}</b>. 
+              {analyticsData?.difficult_topics?.length > 0 ? (
+                <> To reach the next level, focus should be shifted towards <b>{analyticsData.difficult_topics.join(", ")}</b> where retention scores are currently lower than average.</>
+              ) : (
+                <> Consistency is excellent. Recommend exploring more advanced topics to further challenge the knowledge base.</>
+              )}
+           </p>
+        </div>
+
+        <div style={{ marginTop: "60px", textAlign: "center", fontSize: "12px", color: "#999" }}>
+           Report generated automatically by Learning Behaviour Analytics Platform.
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes pulse {
+          0% { transform: scale(0.95); opacity: 0.5; }
+          50% { transform: scale(1.05); opacity: 1; }
+          100% { transform: scale(0.95); opacity: 0.5; }
+        }
+        .print-only { display: none; }
+        @media print {
+           .print-only { display: block !important; }
+           .no-print { display: none !important; }
+           body { background: white !important; }
+           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+      `}</style>
     </div>
   );
 }
