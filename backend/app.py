@@ -142,28 +142,51 @@ def track_activity():
 
         # Update Points and Streak
         today = date.today()
+        # Ensure today is stored as a date string for MySQL compatibility
+        today_str = today.isoformat()
         cursor.execute("SELECT last_activity, streak_count, points FROM users WHERE id=%s", (student_id,))
         user_data = cursor.fetchone()
         
         if user_data:
             last_activity, streak, points = user_data
+            # Ensure streak is an int
+            streak = streak or 0
+            points = points or 0
             new_streak = streak
             
             if last_activity:
-                # If last activity was yesterday, increment streak
-                if last_activity == today - timedelta(days=1):
-                    new_streak += 1
-                # If last activity was before yesterday, reset streak
-                elif last_activity < today - timedelta(days=1):
+                # Convert MySQL DATE to Python date if needed
+                if isinstance(last_activity, str):
+                    try:
+                        last_activity = date.fromisoformat(last_activity)
+                    except Exception:
+                        last_activity = None
+                
+                if last_activity:
+                    # If last activity was yesterday, increment streak
+                    if last_activity == today - timedelta(days=1):
+                        new_streak += 1
+                    # If last activity was before yesterday, reset streak
+                    elif last_activity < today - timedelta(days=1):
+                        new_streak = 1
+                    # If last activity was today, keep the same streak (already handled by default)
+                else:
                     new_streak = 1
             else:
+                # First activity ever
                 new_streak = 1
-                
+            
             # Add points (e.g., 10 points for a study session)
-            new_points = (points or 0) + 10
+            new_points = points + 10
             cursor.execute(
                 "UPDATE users SET points=%s, streak_count=%s, last_activity=%s WHERE id=%s",
-                (new_points, new_streak, today, student_id)
+                (new_points, new_streak, today_str, student_id)
+            )
+        else:
+            # First time activity for this user – initialise points and streak
+            cursor.execute(
+                "UPDATE users SET points=10, streak_count=1, last_activity=%s WHERE id=%s",
+                (today_str, student_id)
             )
 
         conn.commit()
@@ -196,10 +219,14 @@ def save_quiz_score():
                 "INSERT INTO activity (user_id, lesson_name, quiz_score, time_spent) VALUES (%s, %s, %s, %s)",
                 (student_id, topic, score, 0)
             )
+        
+        # Add points for completing quiz
+        cursor.execute("UPDATE users SET points = points + 20 WHERE id = %s", (student_id,))
+        
         conn.commit()
         cursor.close()
         conn.close()
-        return jsonify({"message": "Score saved!"}), 200
+        return jsonify({"message": "Score saved!", "points_added": 20}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

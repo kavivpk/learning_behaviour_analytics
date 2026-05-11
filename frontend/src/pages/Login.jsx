@@ -148,7 +148,7 @@ function Login() {
         <div style={{ 
           height: "1px", 
           backgroundColor: "var(--border-color)", 
-          margin: "24px 0" 
+          margin: "12px 0" 
         }} />
 
         <p style={{ color: "var(--text-secondary)", fontSize: "14px" }}>

@@ -135,7 +135,7 @@ function Dashboard() {
         const endTime = Date.now();
         const durationSeconds = Math.floor((endTime - startTime) / 1000);
 
-        if (durationSeconds > 5) {
+        if (durationSeconds >= 3) {
           fetch("http://127.0.0.1:5000/api/track", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -146,7 +146,7 @@ function Dashboard() {
             }),
           }).then(() => {
             fetchData();
-            showToast(`Time Spent: ${durationSeconds}s. Behavioral profile updated for ${topic.name}!`, "success");
+            showToast(`Earned 10 Points! Study session tracked for ${topic.name}.`, "success");
           });
         }
       }
@@ -160,6 +160,14 @@ function Dashboard() {
   const handleLogout = () => {
     localStorage.clear();
     navigate("/");
+  };
+
+  const handleAIRecommendation = () => {
+    const recommendedTopic = analyticsData?.difficult_topics?.[0] || "CSS";
+    showToast(`AI Coach: Strengthening your knowledge in ${recommendedTopic}...`, "success");
+    setTimeout(() => {
+      navigate(`/quiz/${recommendedTopic}`);
+    }, 1500);
   };
 
   const barOptions = {
@@ -230,13 +238,13 @@ function Dashboard() {
         </div>
       </div>
 
-      <div className="no-print" style={{ padding: "0 20px 40px", maxWidth: "1400px", margin: "0 auto" }}>
+      <div className="no-print" style={{ padding: "0 20px 40px", maxWidth: "1800px", margin: "0 auto", width: "95%" }}>
         
         {/* WELCOME SECTION */}
         <div style={{ marginBottom: "40px", marginTop: "20px", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
            <div>
-              <h2 style={{ fontSize: "28px", fontWeight: "800", marginBottom: "8px" }}>Welcome back, {studentName.split(' ')[0]}!</h2>
-              <p style={{ color: "var(--text-secondary)", fontSize: "14px" }}>Here's what's happening with your learning profile today.</p>
+              <h2 style={{ fontSize: "36px", fontWeight: "800", marginBottom: "8px" }}>Welcome back, {studentName.split(' ')[0]}!</h2>
+              <p style={{ color: "var(--text-secondary)", fontSize: "16px" }}>Here's what's happening with your learning profile today.</p>
            </div>
            <div className="glass-card" style={{ padding: "12px 20px", display: "flex", alignItems: "center", gap: "12px" }}>
               <div style={{ textAlign: "right" }}>
@@ -249,97 +257,92 @@ function Dashboard() {
            </div>
         </div>
 
-        {/* TOP SECTION: ANALYTICS & COACH (SIDE-BY-SIDE) */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "32px", marginBottom: "48px" }}>
+        {/* TOP SECTION: CHARTS & INSIGHTS (STACKED ROWS) */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "32px", marginBottom: "48px" }}>
           
-          {/* LEFT COLUMN: CHARTS */}
-          <div style={{ flex: "2 1 700px" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "24px", marginBottom: "24px" }}>
-          
-          {/* BAR CHART */}
-          <div className="glass-card animate-fade-in" style={{ padding: "28px" }}>
-            <div style={{ marginBottom: "24px" }}>
-              <h4 style={{ fontSize: "12px", fontWeight: "800", textTransform: "uppercase", color: "var(--accent-color)", letterSpacing: "0.1em" }}>Learning distribution</h4>
-              <p style={{ fontSize: "11px", color: "var(--text-muted)" }}>Time spent per topic</p>
+          {/* ROW 1: CHARTS (SIDE-BY-SIDE) */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(500px, 1fr))", gap: "24px" }}>
+            
+            {/* BAR CHART */}
+            <div className="glass-card animate-fade-in" style={{ padding: "28px" }}>
+              <div style={{ marginBottom: "24px" }}>
+                <h4 style={{ fontSize: "14px", fontWeight: "800", textTransform: "uppercase", color: "var(--accent-color)", letterSpacing: "0.1em" }}>Learning distribution</h4>
+                <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>Time spent per topic</p>
+              </div>
+              <div style={{ height: "300px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {analyticsData?.topic_stats?.length > 0 ? (
+                  <Bar 
+                    data={{
+                      labels: analyticsData?.topic_stats?.map(t => t.lesson_name) || [],
+                      datasets: [{
+                        data: analyticsData?.topic_stats?.map(t => t.total_time) || [],
+                        backgroundColor: "rgba(56, 189, 248, 0.6)",
+                        hoverBackgroundColor: "rgba(56, 189, 248, 0.9)",
+                        borderRadius: 6,
+                      }]
+                    }} 
+                    options={barOptions} 
+                  />
+                ) : (
+                  <div style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "13px" }}>
+                     <div style={{ fontSize: "24px", marginBottom: "8px" }}>📊</div>
+                     Select a course below to start tracking your progress
+                  </div>
+                )}
+              </div>
             </div>
-            <div style={{ height: "240px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              {analyticsData?.topic_stats?.length > 0 ? (
-                <Bar 
-                  data={{
-                    labels: analyticsData?.topic_stats?.map(t => t.lesson_name) || [],
-                    datasets: [{
-                      data: analyticsData?.topic_stats?.map(t => t.total_time) || [],
-                      backgroundColor: "rgba(56, 189, 248, 0.6)",
-                      hoverBackgroundColor: "rgba(56, 189, 248, 0.9)",
-                      borderRadius: 6,
-                    }]
-                  }} 
-                  options={barOptions} 
-                />
-              ) : (
-                <div style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "13px" }}>
-                   <div style={{ fontSize: "24px", marginBottom: "8px" }}>📊</div>
-                   Select a course below to start tracking your progress
-                </div>
-              )}
+
+            {/* LINE CHART */}
+            <div className="glass-card animate-fade-in" style={{ padding: "28px", animationDelay: "0.2s" }}>
+              <div style={{ marginBottom: "24px" }}>
+                <h4 style={{ fontSize: "14px", fontWeight: "800", textTransform: "uppercase", color: "var(--accent-color)", letterSpacing: "0.1em" }}>Performance Trend</h4>
+                <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>Quiz accuracy over time</p>
+              </div>
+              <div style={{ height: "300px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {analyticsData?.topic_stats?.filter(t => t.avg_score > 0).length > 0 ? (
+                  <Line 
+                    data={{
+                      labels: analyticsData?.topic_stats?.filter(t => t.avg_score > 0).map(t => t.lesson_name) || [],
+                      datasets: [{
+                        data: analyticsData?.topic_stats?.filter(t => t.avg_score > 0).map(t => t.avg_score) || [],
+                        borderColor: "rgba(45, 212, 191, 1)",
+                        backgroundColor: "rgba(45, 212, 191, 0.1)",
+                        fill: true,
+                        borderWidth: 3,
+                      }]
+                    }} 
+                    options={lineOptions} 
+                  />
+                ) : (
+                  <div style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "13px" }}>
+                     <div style={{ fontSize: "24px", marginBottom: "8px" }}>📈</div>
+                     Complete a quiz to see your performance trend
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* LINE CHART */}
-          <div className="glass-card animate-fade-in" style={{ padding: "28px", animationDelay: "0.2s" }}>
-            <div style={{ marginBottom: "24px" }}>
-              <h4 style={{ fontSize: "12px", fontWeight: "800", textTransform: "uppercase", color: "var(--accent-color)", letterSpacing: "0.1em" }}>Performance Trend</h4>
-              <p style={{ fontSize: "11px", color: "var(--text-muted)" }}>Quiz accuracy over time</p>
-            </div>
-            <div style={{ height: "240px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              {analyticsData?.topic_stats?.filter(t => t.avg_score > 0).length > 0 ? (
-                <Line 
-                  data={{
-                    labels: analyticsData?.topic_stats?.filter(t => t.avg_score > 0).map(t => t.lesson_name) || [],
-                    datasets: [{
-                      data: analyticsData?.topic_stats?.filter(t => t.avg_score > 0).map(t => t.avg_score) || [],
-                      borderColor: "rgba(45, 212, 191, 1)",
-                      backgroundColor: "rgba(45, 212, 191, 0.1)",
-                      fill: true,
-                      borderWidth: 3,
-                    }]
-                  }} 
-                  options={lineOptions} 
-                />
-              ) : (
-                <div style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "13px" }}>
-                   <div style={{ fontSize: "24px", marginBottom: "8px" }}>📈</div>
-                   Complete a quiz to see your performance trend
-                </div>
-              )}
-            </div>
-          </div>
-
-        </div>
-        {/* close charts grid */}
-      </div>
-        {/* close LEFT COLUMN */}
-
-          {/* RIGHT COLUMN: AI COACH & ACTIVITY */}
-          <div style={{ flex: "1 1 350px", display: "flex", flexDirection: "column", gap: "24px" }}>
-
+          {/* ROW 2: COACH & INSIGHTS (HORIZONTAL) */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))", gap: "24px" }}>
+             
              {/* AI COACH CARD */}
-             <div className="glass-card animate-fade-in" style={{ padding: "24px", background: "linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))", border: "1px solid rgba(139, 92, 246, 0.2)" }}>
+             <div className="glass-card animate-fade-in" style={{ padding: "24px", background: "linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))", border: "1px solid rgba(139, 92, 246, 0.2)", height: "100%" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent-color)" }}>
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path><line x1="8" y1="16" x2="8" y2="16"></line><line x1="16" y1="16" x2="16" y2="16"></line></svg>
                    </div>
-                   <h4 style={{ fontSize: "15px", fontWeight: "800" }}>AI Personal Coach</h4>
+                   <h4 style={{ fontSize: "18px", fontWeight: "800" }}>AI Personal Coach</h4>
                 </div>
-                <p style={{ fontSize: "13px", color: "var(--text-main)", lineHeight: "1.6", marginBottom: "20px" }}>
+                <p style={{ fontSize: "15px", color: "var(--text-main)", lineHeight: "1.6", marginBottom: "20px" }}>
                    "Based on your <b>{analyticsData?.most_studied || 'recent'}</b> activity, you're making great progress!
                    I recommend taking a quiz in <b>{analyticsData?.difficult_topics?.[0] || 'CSS'}</b> to strengthen your weak areas."
                 </p>
-                <button className="premium-btn" style={{ width: "100%", padding: "10px", fontSize: "12px" }}>Get AI Recommendations</button>
+                <button onClick={handleAIRecommendation} className="premium-btn" style={{ width: "100%", padding: "12px", fontSize: "14px" }}>Get AI Recommendations</button>
              </div>
 
              {/* STATS BREAKDOWN */}
-             <div className="glass-card animate-fade-in" style={{ padding: "24px", animationDelay: "0.2s" }}>
+             <div className="glass-card animate-fade-in" style={{ padding: "24px", animationDelay: "0.2s", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center" }}>
                 <h4 style={{ fontSize: "14px", fontWeight: "800", marginBottom: "20px" }}>Quick Insights</h4>
                 <div style={{ display: "grid", gap: "16px" }}>
                    {[
@@ -348,25 +351,25 @@ function Dashboard() {
                      { label: "Consistency", value: "9/10", color: "#f59e0b" }
                    ].map((stat, i) => (
                      <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{stat.label}</span>
-                        <span style={{ fontSize: "13px", fontWeight: "700", color: stat.color }}>{stat.value}</span>
+                        <span style={{ fontSize: "14px", color: "var(--text-secondary)" }}>{stat.label}</span>
+                        <span style={{ fontSize: "15px", fontWeight: "700", color: stat.color }}>{stat.value}</span>
                      </div>
                    ))}
                 </div>
              </div>
 
              {/* RECENT BADGES */}
-             <div className="glass-card animate-fade-in" style={{ padding: "24px", animationDelay: "0.4s" }}>
+             <div className="glass-card animate-fade-in" style={{ padding: "24px", animationDelay: "0.4s", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center" }}>
                 <h4 style={{ fontSize: "14px", fontWeight: "800", marginBottom: "20px" }}>Achievements</h4>
-                <div style={{ display: "flex", gap: "12px" }}>
-                   <div title="Fast Learner" style={{ width: "45px", height: "45px", borderRadius: "12px", backgroundColor: "rgba(245, 158, 11, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(245, 158, 11, 0.2)" }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+                   <div title="Fast Learner" style={{ width: "60px", height: "60px", borderRadius: "16px", backgroundColor: "rgba(245, 158, 11, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(245, 158, 11, 0.2)" }}>
+                      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
                    </div>
-                   <div title="Night Owl" style={{ width: "45px", height: "45px", borderRadius: "12px", backgroundColor: "rgba(139, 92, 246, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(139, 92, 246, 0.2)" }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                   <div title="Night Owl" style={{ width: "60px", height: "60px", borderRadius: "16px", backgroundColor: "rgba(139, 92, 246, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(139, 92, 246, 0.2)" }}>
+                      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
                    </div>
-                   <div title="Streak Master" style={{ width: "45px", height: "45px", borderRadius: "12px", backgroundColor: "rgba(59, 130, 246, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(59, 130, 246, 0.2)" }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path></svg>
+                   <div title="Streak Master" style={{ width: "60px", height: "60px", borderRadius: "16px", backgroundColor: "rgba(59, 130, 246, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(59, 130, 246, 0.2)" }}>
+                      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path></svg>
                    </div>
                 </div>
              </div>
@@ -377,20 +380,20 @@ function Dashboard() {
         {/* METRICS ROW */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "24px", marginBottom: "48px" }}>
           <div className="glass-card animate-fade-in" style={{ padding: "24px", borderLeftWidth: "4px", borderLeftStyle: "solid", borderLeftColor: "var(--accent-color)", animationDelay: "0.3s" }}>
-            <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "700", textTransform: "uppercase" }}>Mastery Score</span>
-            <h2 style={{ fontSize: "28px", fontWeight: "800", marginTop: "8px" }}>{analyticsData?.avg_score || 0}%</h2>
+            <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: "700", textTransform: "uppercase" }}>Mastery Score</span>
+            <h2 style={{ fontSize: "32px", fontWeight: "800", marginTop: "8px" }}>{analyticsData?.avg_score || 0}%</h2>
           </div>
           <div className="glass-card animate-fade-in" style={{ padding: "24px", borderLeftWidth: "4px", borderLeftStyle: "solid", borderLeftColor: "#2dd4bf", animationDelay: "0.35s" }}>
-            <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "700", textTransform: "uppercase" }}>Learning Efficiency</span>
-            <h2 style={{ fontSize: "28px", fontWeight: "800", marginTop: "8px" }}>{analyticsData?.overall_efficiency || 0} pts/m</h2>
+            <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: "700", textTransform: "uppercase" }}>Learning Efficiency</span>
+            <h2 style={{ fontSize: "32px", fontWeight: "800", marginTop: "8px" }}>{analyticsData?.overall_efficiency || 0} pts/m</h2>
           </div>
           <div className="glass-card animate-fade-in" style={{ padding: "24px", borderLeftWidth: "4px", borderLeftStyle: "solid", borderLeftColor: "#f59e0b", animationDelay: "0.4s" }}>
-            <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "700", textTransform: "uppercase" }}>Engagement Level</span>
-            <h2 style={{ fontSize: "28px", fontWeight: "800", marginTop: "8px" }}>{analyticsData?.engagement_level || "Analyzing..."}</h2>
+            <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: "700", textTransform: "uppercase" }}>Engagement Level</span>
+            <h2 style={{ fontSize: "32px", fontWeight: "800", marginTop: "8px" }}>{analyticsData?.engagement_level || "Analyzing..."}</h2>
           </div>
           <div className="glass-card animate-fade-in" style={{ padding: "24px", borderLeftWidth: "4px", borderLeftStyle: "solid", borderLeftColor: "#a855f7", animationDelay: "0.45s" }}>
-            <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "700", textTransform: "uppercase" }}>Dominant Skill</span>
-            <h2 style={{ fontSize: "22px", fontWeight: "800", marginTop: "8px" }}>{analyticsData?.most_studied || "N/A"}</h2>
+            <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: "700", textTransform: "uppercase" }}>Dominant Skill</span>
+            <h2 style={{ fontSize: "26px", fontWeight: "800", marginTop: "8px" }}>{analyticsData?.most_studied || "N/A"}</h2>
           </div>
         </div>
 
@@ -412,7 +415,7 @@ function Dashboard() {
         <div style={{ marginTop: "40px" }}>
         
         {/* CURATED PATHS */}
-        <h3 style={{ fontSize: "18px", fontWeight: "800", marginBottom: "24px", color: "var(--text-main)" }}>Curated Learning Paths</h3>
+        <h3 style={{ fontSize: "22px", fontWeight: "800", marginBottom: "24px", color: "var(--text-main)" }}>Curated Learning Paths</h3>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "24px", marginBottom: "60px" }}>
            {[
              { name: "Frontend Architecture", icon: "🌐", items: ["HTML", "CSS", "JavaScript", "React", "Bootstrap", "TypeScript"], color: "#3b82f6" },
@@ -453,7 +456,7 @@ function Dashboard() {
 
         {/* TOPICS GRID */}
         <div style={{ marginBottom: "32px", marginTop: "60px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-          <h3 style={{ fontSize: "18px", fontWeight: "800" }}>Explore All Modules</h3>
+          <h3 style={{ fontSize: "22px", fontWeight: "800" }}>Explore All Modules</h3>
           <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>{topics.length} specialized modules available</span>
         </div>
 

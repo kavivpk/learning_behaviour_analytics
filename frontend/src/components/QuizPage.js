@@ -139,7 +139,7 @@ export default function QuizPage() {
         topic: name,
         score: percentage,
       });
-      setToast({ message: `Scored ${percentage}% in ${selectedSection || name}`, type: "success" });
+      setToast({ message: `Scored ${percentage}%! Earned 20 Points in ${selectedSection || name}.`, type: "success" });
     } catch {
       console.log("Score save error");
     }
