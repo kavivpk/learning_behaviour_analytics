@@ -152,7 +152,7 @@ function Register() {
           Create Account
         </button>
 
-        <div style={{ height: "1px", backgroundColor: "var(--border-color)", margin: "12px 0" }} />>
+        <div style={{ height: "1px", backgroundColor: "var(--border-color)", margin: "12px 0" }} />
 
         <p style={{ color: "var(--text-secondary)", fontSize: "14px" }}>
           Joined before?{" "}

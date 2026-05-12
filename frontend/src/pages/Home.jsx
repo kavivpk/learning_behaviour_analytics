@@ -52,7 +52,7 @@ const icons = {
   logo: (size = 32, color = "var(--accent-color)") => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect width="24" height="24" rx="6" fill={color} />
-      <path d="M12 7C9.23858 7 7 9.23858 7 12C7 14.7614 9.23858 17 12 17C14.7614 17 17 14.7614 17 12" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M12 7C9.23858 7 7 9.23858 7 12C7 14.7614 9.23858 17 12 17C14.7614 17 17 14.7614 17 12" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
       <circle cx="12" cy="12" r="2" fill="white" />
     </svg>
   )
@@ -235,7 +235,7 @@ function Home() {
             academic journey with our minimal learning analytics system.
           </p>
 
-            {/* Feature Grid */}
+          {/* Feature Grid */}
           <div style={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
@@ -277,7 +277,7 @@ function Home() {
         }}>
           {/* Logo Icon inside Card */}
           <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px" }}>
-             {icons.logo(48)}
+            {icons.logo(48)}
           </div>
 
           {/* Tabs */}
@@ -327,7 +327,7 @@ function Home() {
                   placeholder="Enter your email"
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
-                  style={{...inputStyle, padding: "14px 16px", fontSize: "15px", backgroundColor: "var(--glass-bg)", borderRadius: "12px"}}
+                  style={{ ...inputStyle, padding: "14px 16px", fontSize: "15px", backgroundColor: "var(--glass-bg)", borderRadius: "12px" }}
                 />
               </div>
 
@@ -339,7 +339,7 @@ function Home() {
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                  style={{...inputStyle, padding: "14px 16px", fontSize: "15px", backgroundColor: "var(--glass-bg)", borderRadius: "12px"}}
+                  style={{ ...inputStyle, padding: "14px 16px", fontSize: "15px", backgroundColor: "var(--glass-bg)", borderRadius: "12px" }}
                 />
               </div>
 
@@ -383,7 +383,7 @@ function Home() {
                   placeholder="Enter your name"
                   value={regName}
                   onChange={(e) => setRegName(e.target.value)}
-                  style={{...inputStyle, padding: "14px 16px", fontSize: "15px"}}
+                  style={{ ...inputStyle, padding: "14px 16px", fontSize: "15px" }}
                 />
               </div>
 
@@ -394,7 +394,7 @@ function Home() {
                   placeholder="Enter your email"
                   value={regEmail}
                   onChange={(e) => setRegEmail(e.target.value)}
-                  style={{...inputStyle, padding: "14px 16px", fontSize: "15px"}}
+                  style={{ ...inputStyle, padding: "14px 16px", fontSize: "15px" }}
                 />
               </div>
 
@@ -405,7 +405,7 @@ function Home() {
                   placeholder="Create a password"
                   value={regPassword}
                   onChange={(e) => setRegPassword(e.target.value)}
-                  style={{...inputStyle, padding: "14px 16px", fontSize: "15px"}}
+                  style={{ ...inputStyle, padding: "14px 16px", fontSize: "15px" }}
                 />
               </div>
 
@@ -417,7 +417,7 @@ function Home() {
                   value={regConfirm}
                   onChange={(e) => setRegConfirm(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleRegister()}
-                  style={{...inputStyle, padding: "14px 16px", fontSize: "15px"}}
+                  style={{ ...inputStyle, padding: "14px 16px", fontSize: "15px" }}
                 />
               </div>
 
@@ -447,7 +447,6 @@ function Home() {
           )}
         </div>
       </div>
-
       {/* Footer */}
       <div style={{
         textAlign: "center",
