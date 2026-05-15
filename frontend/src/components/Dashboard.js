@@ -7,12 +7,13 @@ import {
   BarElement,
   LineElement,
   PointElement,
+  ArcElement,
   Title,
   Tooltip,
   Legend,
   Filler,
 } from "chart.js";
-import { Bar, Line } from "react-chartjs-2";
+import { Bar, Line, Pie } from "react-chartjs-2";
 import Toast from "./Toast";
 import ThemeToggle from "./ThemeToggle";
 
@@ -22,6 +23,7 @@ ChartJS.register(
   BarElement,
   LineElement,
   PointElement,
+  ArcElement,
   Title,
   Tooltip,
   Legend,
@@ -257,17 +259,48 @@ function Dashboard() {
            </div>
         </div>
 
-        {/* TOP SECTION: CHARTS & INSIGHTS (STACKED ROWS) */}
+        {/* TOP SECTION: CHARTS (GRID OF 3) */}
         <div style={{ display: "flex", flexDirection: "column", gap: "32px", marginBottom: "48px" }}>
           
-          {/* ROW 1: CHARTS (SIDE-BY-SIDE) */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(500px, 1fr))", gap: "24px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "24px" }}>
             
-            {/* BAR CHART */}
+            {/* LINE CHART: MONTHLY TIME SPENT */}
             <div className="glass-card animate-fade-in" style={{ padding: "28px" }}>
               <div style={{ marginBottom: "24px" }}>
-                <h4 style={{ fontSize: "14px", fontWeight: "800", textTransform: "uppercase", color: "var(--accent-color)", letterSpacing: "0.1em" }}>Learning distribution</h4>
-                <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>Time spent per topic</p>
+                <h4 style={{ fontSize: "14px", fontWeight: "800", textTransform: "uppercase", color: "var(--accent-color)", letterSpacing: "0.1em" }}>Study Consistency</h4>
+                <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>Monthly time spent learning</p>
+              </div>
+              <div style={{ height: "300px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {analyticsData?.time_trend?.length > 0 ? (
+                  <Line 
+                    data={{
+                      labels: analyticsData?.time_trend?.map(t => t.date) || [],
+                      datasets: [{
+                        label: 'Time Spent (sec)',
+                        data: analyticsData?.time_trend?.map(t => t.time_spent) || [],
+                        borderColor: "rgba(56, 189, 248, 1)",
+                        backgroundColor: "rgba(56, 189, 248, 0.1)",
+                        fill: true,
+                        borderWidth: 3,
+                        tension: 0.4,
+                      }]
+                    }} 
+                    options={lineOptions} 
+                  />
+                ) : (
+                  <div style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "13px" }}>
+                     <div style={{ fontSize: "24px", marginBottom: "8px" }}>📅</div>
+                     Keep studying to build your timeline
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* BAR CHART: QUIZ PERFORMANCE */}
+            <div className="glass-card animate-fade-in" style={{ padding: "28px", animationDelay: "0.2s" }}>
+              <div style={{ marginBottom: "24px" }}>
+                <h4 style={{ fontSize: "14px", fontWeight: "800", textTransform: "uppercase", color: "#10b981", letterSpacing: "0.1em" }}>Quiz Performance</h4>
+                <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>Average score per course</p>
               </div>
               <div style={{ height: "300px", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 {analyticsData?.topic_stats?.length > 0 ? (
@@ -275,52 +308,69 @@ function Dashboard() {
                     data={{
                       labels: analyticsData?.topic_stats?.map(t => t.lesson_name) || [],
                       datasets: [{
-                        data: analyticsData?.topic_stats?.map(t => t.total_time) || [],
-                        backgroundColor: "rgba(56, 189, 248, 0.6)",
-                        hoverBackgroundColor: "rgba(56, 189, 248, 0.9)",
+                        data: analyticsData?.topic_stats?.map(t => t.avg_score) || [],
+                        backgroundColor: "rgba(16, 185, 129, 0.6)",
+                        hoverBackgroundColor: "rgba(16, 185, 129, 0.9)",
                         borderRadius: 6,
                       }]
                     }} 
-                    options={barOptions} 
+                    options={{
+                        ...barOptions,
+                        scales: {
+                            ...barOptions.scales,
+                            y: { ...barOptions.scales.y, max: 100 }
+                        }
+                    }} 
                   />
                 ) : (
                   <div style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "13px" }}>
                      <div style={{ fontSize: "24px", marginBottom: "8px" }}>📊</div>
-                     Select a course below to start tracking your progress
+                     Complete a quiz to see your performance
                   </div>
                 )}
               </div>
             </div>
 
-            {/* LINE CHART */}
-            <div className="glass-card animate-fade-in" style={{ padding: "28px", animationDelay: "0.2s" }}>
+            {/* PIE CHART: TIME DISTRIBUTION */}
+            <div className="glass-card animate-fade-in" style={{ padding: "28px", animationDelay: "0.4s" }}>
               <div style={{ marginBottom: "24px" }}>
-                <h4 style={{ fontSize: "14px", fontWeight: "800", textTransform: "uppercase", color: "var(--accent-color)", letterSpacing: "0.1em" }}>Performance Trend</h4>
-                <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>Quiz accuracy over time</p>
+                <h4 style={{ fontSize: "14px", fontWeight: "800", textTransform: "uppercase", color: "#f59e0b", letterSpacing: "0.1em" }}>Time Distribution</h4>
+                <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>Course study time breakdown</p>
               </div>
               <div style={{ height: "300px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                {analyticsData?.topic_stats?.filter(t => t.avg_score > 0).length > 0 ? (
-                  <Line 
+                {analyticsData?.topic_stats?.length > 0 ? (
+                  <Pie 
                     data={{
-                      labels: analyticsData?.topic_stats?.filter(t => t.avg_score > 0).map(t => t.lesson_name) || [],
+                      labels: analyticsData?.topic_stats?.map(t => t.lesson_name) || [],
                       datasets: [{
-                        data: analyticsData?.topic_stats?.filter(t => t.avg_score > 0).map(t => t.avg_score) || [],
-                        borderColor: "rgba(45, 212, 191, 1)",
-                        backgroundColor: "rgba(45, 212, 191, 0.1)",
-                        fill: true,
-                        borderWidth: 3,
+                        data: analyticsData?.topic_stats?.map(t => t.total_time) || [],
+                        backgroundColor: [
+                          '#38bdf8', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', 
+                          '#06b6d4', '#f43f5e', '#84cc16', '#a855f7', '#0284c7'
+                        ],
+                        borderWidth: 0,
                       }]
                     }} 
-                    options={lineOptions} 
+                    options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: { color: getThemeTextColor(), font: { size: 10 } }
+                            }
+                        }
+                    }} 
                   />
                 ) : (
                   <div style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "13px" }}>
-                     <div style={{ fontSize: "24px", marginBottom: "8px" }}>📈</div>
-                     Complete a quiz to see your performance trend
+                     <div style={{ fontSize: "24px", marginBottom: "8px" }}>🥧</div>
+                     Study topics to see your time breakdown
                   </div>
                 )}
               </div>
             </div>
+
           </div>
 
           {/* ROW 2: COACH & INSIGHTS (HORIZONTAL) */}
