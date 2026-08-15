@@ -7,6 +7,7 @@ import Register from "./pages/Register";
 import Dashboard from "./components/Dashboard";
 import TopicPage from "./components/TopicPage";
 import QuizPage from "./components/QuizPage";
+import Footer from "./components/Footer";
 
 function App() {
   return (
@@ -27,6 +28,8 @@ function App() {
         <Route path="/quiz/:name" element={<QuizPage />} />
 
       </Routes>
+
+      <Footer />
 
     </Router>
   );

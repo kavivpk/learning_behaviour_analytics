@@ -447,16 +447,6 @@ function Home() {
           )}
         </div>
       </div>
-      {/* Footer */}
-      <div style={{
-        textAlign: "center",
-        padding: "24px 20px",
-        color: "var(--text-muted)",
-        fontSize: "12px",
-        borderTop: "1px solid var(--border-color)",
-      }}>
-        © 2026 Analytica Learning Behaviour Systems
-      </div>
     </div>
   );
 }
