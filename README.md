@@ -2,6 +2,16 @@
 
 Analytica is a state-of-the-art web application designed to track, analyze, and optimize student learning patterns. By leveraging AI-powered assessments and real-time behavioral tracking, it provides personalized insights that help students master technical subjects more efficiently.
 
+## 📝 Project Abstract
+
+In modern education systems, student performance is usually measured using marks and attendance. However, these traditional methods do not provide insights into how students interact with learning materials.
+
+This project proposes a Web-Based Learning Behaviour Data Analytics System for Students that collects and analyzes student interaction data such as time spent on topics, topic visit frequency, and quiz performance.
+
+The system stores this data in a database and applies data analytics techniques to identify learning patterns and detect difficult topics. A dashboard is provided to visualize insights using charts and graphs, helping students understand their learning behaviour and improve performance.
+
+This approach enables a more data-driven method to support academic learning and performance analysis.
+
 ## 🚀 Key Features
 
 - **Real-time Activity Tracking**: Monitors time spent on specific study modules to build a behavioral profile.
