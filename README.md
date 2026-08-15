@@ -5,7 +5,7 @@ Analytica is a state-of-the-art web application designed to track, analyze, and 
 ## 🚀 Key Features
 
 - **Real-time Activity Tracking**: Monitors time spent on specific study modules to build a behavioral profile.
-- **AI-Powered Adaptive Quizzes**: Uses the **Groq AI (Llama 3.3 70B)** to generate unique questions based on the student's actual study sessions.
+- **AI-Powered Adaptive Quizzes**: Uses the **Groq AI (openai/gpt-oss-120b)** to generate unique questions based on the student's actual study sessions.
 - **Dynamic Performance Dashboard**: Beautifully visualized analytics using Chart.js to show mastery trends, time distribution, and learning efficiency.
 - **Personalized AI Coach**: Intelligent recommendations that guide students to focus on their weakest areas.
 - **Gamification System**: Earn points and maintain day streaks to stay motivated.
@@ -15,7 +15,7 @@ Analytica is a state-of-the-art web application designed to track, analyze, and 
 
 - **Frontend**: React.js, Chart.js, React Router
 - **Backend**: Python (Flask), MySQL
-- **AI Engine**: Groq API (Llama 3.3 70B Versatile)
+- **AI Engine**: Groq API (openai/gpt-oss-120b)
 - **Styling**: Vanilla CSS with modern Glassmorphism & Dark Mode aesthetics
 
 ## 📦 Installation & Setup
