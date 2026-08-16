@@ -211,7 +211,7 @@ function Dashboard() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-color)", color: "var(--text-main)" }}>
+    <div className="dashboard-wrapper" style={{ minHeight: "100vh", backgroundColor: "var(--bg-color)", color: "var(--text-main)" }}>
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       {/* HEADER */}
@@ -648,7 +648,7 @@ function Dashboard() {
            .no-print { display: none !important; }
            
            /* Force the page wrapper and body to have a clean white background during print */
-           body, html, #root, div[style*="minHeight"] { 
+           body, html, #root, .dashboard-wrapper { 
              background: white !important; 
              background-color: white !important;
              color: #333 !important; 

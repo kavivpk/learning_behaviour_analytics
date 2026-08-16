@@ -113,7 +113,7 @@ body::after {
 
 /* Print Styles */
 @media print {
-  body { background: white !important; color: black !important; }
+  body, html, #root, .dashboard-wrapper { background: white !important; background-color: white !important; color: black !important; }
   .premium-btn, .theme-toggle, button, #ThemeToggle, .floating-timer { display: none !important; }
   .glass-card { 
     box-shadow: none !important; 
