@@ -240,9 +240,13 @@ function Dashboard() {
             const html = document.documentElement;
             const currentTheme = html.getAttribute('data-theme');
             html.setAttribute('data-theme', 'light');
-            window.print();
-            // Restore original theme after print dialog closes
-            html.setAttribute('data-theme', currentTheme || 'dark');
+            
+            // Allow the browser to repaint the DOM with light theme before printing
+            setTimeout(() => {
+              window.print();
+              // Restore original theme after print dialog closes
+              html.setAttribute('data-theme', currentTheme || 'dark');
+            }, 150);
           }} className="glass-card" style={{ padding: "8px 16px", fontSize: "12px", fontWeight: "700", cursor: "pointer", border: "1px solid var(--accent-color)", color: "var(--accent-color)", backgroundColor: "transparent" }}>Download Report</button>
           <button onClick={handleLogout} className="premium-btn" style={{ padding: "8px 20px", fontSize: "12px" }}>Logout</button>
         </div>
@@ -642,9 +646,17 @@ function Dashboard() {
         @media print {
            .print-only { display: block !important; }
            .no-print { display: none !important; }
-           body { background: white !important; color: #333 !important; }
+           
+           /* Force the page wrapper and body to have a clean white background during print */
+           body, html, #root, div[style*="minHeight"] { 
+             background: white !important; 
+             background-color: white !important;
+             color: #333 !important; 
+           }
+           
            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-           /* Force light theme CSS variables during print so PDF is always light */
+           
+           /* Force light theme CSS variables for the print context */
            :root, [data-theme="dark"], [data-theme="light"] {
              --bg-color: #f8fafc !important;
              --nav-bg: rgba(255, 255, 255, 0.7) !important;
@@ -657,7 +669,53 @@ function Dashboard() {
              --glass-bg: rgba(0, 0, 0, 0.01) !important;
              --glass-border: rgba(0, 0, 0, 0.05) !important;
            }
-           #printable-report { background: white !important; color: #333 !important; }
+           
+           /* Explicitly style the printable report container and its nested children */
+           #printable-report { 
+             background: white !important; 
+             background-color: white !important;
+             color: #333 !important; 
+           }
+           
+           #printable-report * {
+             color: #333 !important;
+           }
+           
+           /* Clean professional layout borders for the summary cards */
+           #printable-report div[style*="border"] {
+             border: 1px solid #ddd !important;
+             background-color: white !important;
+             background: white !important;
+           }
+           
+           /* Style table, rows, and cells for light theme print */
+           #printable-report table {
+             width: 100% !important;
+             border-collapse: collapse !important;
+           }
+           
+           #printable-report tr {
+             background: transparent !important;
+             border-bottom: 1px solid #eee !important;
+           }
+           
+           #printable-report th {
+             background-color: #f9f9f9 !important;
+             border-bottom: 2px solid #ddd !important;
+             color: #333 !important;
+           }
+           
+           #printable-report td {
+             border-bottom: 1px solid #eee !important;
+             color: #444 !important;
+           }
+           
+           /* Professional AI recommendations box with blue left border */
+           #printable-report div[style*="borderLeft"] {
+             background-color: #f4f7ff !important;
+             background: #f4f7ff !important;
+             border-left: 4px solid #3b82f6 !important;
+           }
         }
       `}</style>
     </div>
