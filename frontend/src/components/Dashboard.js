@@ -235,7 +235,15 @@ function Dashboard() {
           </div>
           <ThemeToggle />
           <span style={{ color: "var(--text-secondary)", fontSize: "13px", fontWeight: "600" }}>{studentName}</span>
-          <button onClick={() => window.print()} className="glass-card" style={{ padding: "8px 16px", fontSize: "12px", fontWeight: "700", cursor: "pointer", border: "1px solid var(--accent-color)", color: "var(--accent-color)", backgroundColor: "transparent" }}>Download Report</button>
+          <button onClick={() => {
+            // Force light theme for PDF regardless of current app theme
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            html.setAttribute('data-theme', 'light');
+            window.print();
+            // Restore original theme after print dialog closes
+            html.setAttribute('data-theme', currentTheme || 'dark');
+          }} className="glass-card" style={{ padding: "8px 16px", fontSize: "12px", fontWeight: "700", cursor: "pointer", border: "1px solid var(--accent-color)", color: "var(--accent-color)", backgroundColor: "transparent" }}>Download Report</button>
           <button onClick={handleLogout} className="premium-btn" style={{ padding: "8px 20px", fontSize: "12px" }}>Logout</button>
         </div>
       </div>
@@ -634,8 +642,22 @@ function Dashboard() {
         @media print {
            .print-only { display: block !important; }
            .no-print { display: none !important; }
-           body { background: white !important; }
+           body { background: white !important; color: #333 !important; }
            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+           /* Force light theme CSS variables during print so PDF is always light */
+           :root, [data-theme="dark"], [data-theme="light"] {
+             --bg-color: #f8fafc !important;
+             --nav-bg: rgba(255, 255, 255, 0.7) !important;
+             --card-bg: rgba(255, 255, 255, 0.4) !important;
+             --border-color: rgba(0, 0, 0, 0.05) !important;
+             --text-main: #0f172a !important;
+             --text-secondary: #475569 !important;
+             --text-muted: #94a3b8 !important;
+             --accent-color: #0284c7 !important;
+             --glass-bg: rgba(0, 0, 0, 0.01) !important;
+             --glass-border: rgba(0, 0, 0, 0.05) !important;
+           }
+           #printable-report { background: white !important; color: #333 !important; }
         }
       `}</style>
     </div>
