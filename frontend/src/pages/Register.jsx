@@ -28,7 +28,7 @@ function Register() {
     }
 
     try {
-      const response = await axios.post("http://127.0.0.1:5000/api/register", {
+      const response = await axios.post("https://learning-behaviour-backend.onrender.com/api/register", {
         name,
         email,
         password,
@@ -76,16 +76,16 @@ function Register() {
         maxWidth: "400px",
         textAlign: "center"
       }}>
-        <h2 className="text-gradient" style={{ 
-          fontSize: "32px", 
+        <h2 className="text-gradient" style={{
+          fontSize: "32px",
           marginBottom: "8px"
         }}>
           Join Analytica
         </h2>
-        <p style={{ 
-          color: "var(--text-secondary)", 
-          fontSize: "14px", 
-          marginBottom: "32px" 
+        <p style={{
+          color: "var(--text-secondary)",
+          fontSize: "14px",
+          marginBottom: "32px"
         }}>
           Start your data-driven learning path
         </p>

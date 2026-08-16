@@ -8,7 +8,7 @@ function Report() {
 
   useEffect(() => {
     if (!studentId) return;
-    fetch(`http://127.0.0.1:5000/api/analytics/${studentId}`)
+    fetch(`https://learning-behaviour-backend.onrender.com/api/analytics/${studentId}`)
       .then(res => res.json())
       .then(data => setAnalytics(data))
       .catch(err => setError(err.message));

@@ -27,14 +27,14 @@ export default function QuizPage() {
       try {
         setLoading(true);
         // 1. Fetch History first
-        const historyRes = await axios.get(`http://127.0.0.1:5000/api/answered_questions?user_id=${studentId}&topic=${name}`);
+        const historyRes = await axios.get(`https://learning-behaviour-backend.onrender.com/api/answered_questions?user_id=${studentId}&topic=${name}`);
         setAnsweredHistory(historyRes.data.answered || []);
 
         // 2. Fetch Quiz
         const storageKey = `study_content_${name.toLowerCase()}`;
         const studiedContent = localStorage.getItem(storageKey);
-        
-        const response = await axios.post("http://127.0.0.1:5000/api/generate_quiz", {
+
+        const response = await axios.post("https://learning-behaviour-backend.onrender.com/api/generate_quiz", {
           student_id: studentId,
           topic: name,
           content: studiedContent || null
@@ -71,7 +71,7 @@ export default function QuizPage() {
 
   const questions = useMemo(() => {
     if (!selectedSection) return [];
-    
+
     let pool = [];
     const topicKey = name.toLowerCase();
     const staticPool = defaultQuizData[topicKey] || defaultQuizData[name] || [];
@@ -113,7 +113,7 @@ export default function QuizPage() {
     // Record that this question was completed
     try {
       const qText = questions[current].question;
-      await axios.post("http://127.0.0.1:5000/api/mark_answered", {
+      await axios.post("https://learning-behaviour-backend.onrender.com/api/mark_answered", {
         user_id: studentId,
         topic: name,
         question_text: qText
@@ -134,7 +134,7 @@ export default function QuizPage() {
     setFinished(true);
 
     try {
-      await axios.post("http://127.0.0.1:5000/api/quiz_score", {
+      await axios.post("https://learning-behaviour-backend.onrender.com/api/quiz_score", {
         student_id: studentId,
         topic: name,
         score: percentage,
@@ -163,42 +163,42 @@ export default function QuizPage() {
     return (
       <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-color)", color: "var(--text-main)" }}>
         <div className="glass-card" style={{ padding: "16px 32px", borderBottom: "1px solid var(--border-color)", display: "flex", justifyContent: "space-between", alignItems: "center", margin: "10px 20px", position: "sticky", top: 10, zIndex: 100 }}>
-           <span className="text-gradient" style={{ fontSize: "16px", letterSpacing: "0.1em" }}>{name.toUpperCase()} ASSESSMENT</span>
-           <button onClick={() => navigate("/dashboard")} className="premium-btn" style={{ padding: "8px 16px", fontSize: "12px" }}>Dashboard</button>
+          <span className="text-gradient" style={{ fontSize: "16px", letterSpacing: "0.1em" }}>{name.toUpperCase()} ASSESSMENT</span>
+          <button onClick={() => navigate("/dashboard")} className="premium-btn" style={{ padding: "8px 16px", fontSize: "12px" }}>Dashboard</button>
         </div>
         <div style={{ maxWidth: "800px", margin: "60px auto", padding: "0 20px" }}>
-           <h2 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "8px" }}>Choose an Assessment Area</h2>
-           <p style={{ color: "var(--text-secondary)", marginBottom: "40px" }}>Select a specific section to test your knowledge or use AI Dynamic mode.</p>
-           
-           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "20px" }}>
-              <button 
-                onClick={() => setSelectedSection("AI")}
+          <h2 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "8px" }}>Choose an Assessment Area</h2>
+          <p style={{ color: "var(--text-secondary)", marginBottom: "40px" }}>Select a specific section to test your knowledge or use AI Dynamic mode.</p>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "20px" }}>
+            <button
+              onClick={() => setSelectedSection("AI")}
+              className="glass-card"
+              style={{
+                padding: "30px", border: "2px solid var(--accent-color)",
+                textAlign: "left", cursor: "pointer"
+              }}
+            >
+              <span style={{ display: "block", fontSize: "11px", fontWeight: "900", color: "var(--accent-color)", textTransform: "uppercase", marginBottom: "10px" }}>Dynamic Analysis</span>
+              <h3 style={{ fontSize: "20px", fontWeight: "800", color: "var(--text-main)" }}>AI Performance Quiz</h3>
+              <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "10px" }}>Custom questions generated from your study session.</p>
+            </button>
+
+            {sections.map(s => (
+              <button
+                key={s}
+                onClick={() => setSelectedSection(s)}
                 className="glass-card"
                 style={{
-                  padding: "30px", border: "2px solid var(--accent-color)",
-                  textAlign: "left", cursor: "pointer"
+                  padding: "30px", textAlign: "left", cursor: "pointer"
                 }}
               >
-                 <span style={{ display: "block", fontSize: "11px", fontWeight: "900", color: "var(--accent-color)", textTransform: "uppercase", marginBottom: "10px" }}>Dynamic Analysis</span>
-                 <h3 style={{ fontSize: "20px", fontWeight: "800", color: "var(--text-main)" }}>AI Performance Quiz</h3>
-                 <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "10px" }}>Custom questions generated from your study session.</p>
+                <span style={{ display: "block", fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "10px" }}>Standard Module</span>
+                <h3 style={{ fontSize: "20px", fontWeight: "800", color: "var(--text-main)" }}>{s}</h3>
+                <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "10px" }}>Foundational technical questions.</p>
               </button>
-
-              {sections.map(s => (
-                <button 
-                  key={s}
-                  onClick={() => setSelectedSection(s)}
-                  className="glass-card"
-                  style={{
-                    padding: "30px", textAlign: "left", cursor: "pointer"
-                  }}
-                >
-                   <span style={{ display: "block", fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "10px" }}>Standard Module</span>
-                   <h3 style={{ fontSize: "20px", fontWeight: "800", color: "var(--text-main)" }}>{s}</h3>
-                   <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "10px" }}>Foundational technical questions.</p>
-                </button>
-              ))}
-           </div>
+            ))}
+          </div>
         </div>
       </div>
     )
@@ -228,13 +228,13 @@ export default function QuizPage() {
             <h2 style={{ fontSize: "24px", marginBottom: "16px" }}>All Completed!</h2>
             <p style={{ color: "var(--text-secondary)", marginBottom: "32px" }}>You have mastered all standard questions for <b>{selectedSection || name}</b>. Ready for an AI challenge?</p>
             <div style={{ display: "flex", gap: "16px", justifyContent: "center" }}>
-               <button 
+              <button
                 onClick={async () => {
                   try {
                     setLoading(true);
                     const storageKey = `study_content_${name.toLowerCase()}`;
                     const studiedContent = localStorage.getItem(storageKey);
-                    const response = await axios.post("http://127.0.0.1:5000/api/generate_quiz", {
+                    const response = await axios.post("https://learning-behaviour-backend.onrender.com/api/generate_quiz", {
                       student_id: studentId,
                       topic: name,
                       focus: selectedSection !== "AI" ? selectedSection : null,
@@ -257,8 +257,8 @@ export default function QuizPage() {
               >
                 Generate AI Quiz
               </button>
-              <button 
-                onClick={() => navigate("/dashboard")} 
+              <button
+                onClick={() => navigate("/dashboard")}
                 className="glass-card"
                 style={{ padding: "12px 24px", fontSize: "14px", fontWeight: "700", cursor: "pointer" }}
               >

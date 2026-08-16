@@ -108,7 +108,7 @@ function Home() {
       return;
     }
     try {
-      const res = await axios.post("http://127.0.0.1:5000/api/login", {
+      const res = await axios.post("https://learning-behaviour-backend.onrender.com/api/login", {
         email: loginEmail,
         password: loginPassword,
       });
@@ -136,7 +136,7 @@ function Home() {
       return;
     }
     try {
-      const res = await axios.post("http://127.0.0.1:5000/api/register", {
+      const res = await axios.post("https://learning-behaviour-backend.onrender.com/api/register", {
         name: regName,
         email: regEmail,
         password: regPassword,

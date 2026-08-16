@@ -16,7 +16,7 @@ function Login() {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post("http://127.0.0.1:5000/api/login", {
+      const response = await axios.post("https://learning-behaviour-backend.onrender.com/api/login", {
         email,
         password,
       });
@@ -63,25 +63,25 @@ function Login() {
         maxWidth: "400px",
         textAlign: "center"
       }}>
-        <h2 className="text-gradient" style={{ 
-          fontSize: "32px", 
+        <h2 className="text-gradient" style={{
+          fontSize: "32px",
           marginBottom: "8px"
         }}>
           Welcome Back
         </h2>
-        <p style={{ 
-          color: "var(--text-secondary)", 
-          fontSize: "14px", 
-          marginBottom: "32px" 
+        <p style={{
+          color: "var(--text-secondary)",
+          fontSize: "14px",
+          marginBottom: "32px"
         }}>
           Continue your personalized learning journey
         </p>
 
         <div style={{ textAlign: "left", marginBottom: "20px" }}>
-          <label style={{ 
-            color: "var(--text-secondary)", 
-            fontSize: "12px", 
-            fontWeight: "700", 
+          <label style={{
+            color: "var(--text-secondary)",
+            fontSize: "12px",
+            fontWeight: "700",
             textTransform: "uppercase",
             letterSpacing: "0.05em",
             display: "block",
@@ -92,13 +92,13 @@ function Login() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             style={{
-              width: "100%", 
-              padding: "12px 16px", 
-              borderRadius: "12px", 
+              width: "100%",
+              padding: "12px 16px",
+              borderRadius: "12px",
               border: "1px solid var(--border-color)",
-              backgroundColor: "var(--glass-bg)", 
+              backgroundColor: "var(--glass-bg)",
               color: "var(--text-main)",
-              fontSize: "14px", 
+              fontSize: "14px",
               outline: "none",
               boxSizing: "border-box"
             }}
@@ -106,27 +106,27 @@ function Login() {
         </div>
 
         <div style={{ textAlign: "left", marginBottom: "32px" }}>
-          <label style={{ 
-            color: "var(--text-secondary)", 
-            fontSize: "12px", 
-            fontWeight: "700", 
+          <label style={{
+            color: "var(--text-secondary)",
+            fontSize: "12px",
+            fontWeight: "700",
             textTransform: "uppercase",
             letterSpacing: "0.05em",
-            display: "block", 
-            marginBottom: "8px" 
+            display: "block",
+            marginBottom: "8px"
           }}>Password</label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             style={{
-              width: "100%", 
+              width: "100%",
               padding: "12px 16px",
-              borderRadius: "12px", 
+              borderRadius: "12px",
               border: "1px solid var(--border-color)",
-              backgroundColor: "var(--glass-bg)", 
+              backgroundColor: "var(--glass-bg)",
               color: "var(--text-main)",
-              fontSize: "14px", 
+              fontSize: "14px",
               outline: "none",
               boxSizing: "border-box"
             }}
@@ -137,18 +137,18 @@ function Login() {
           onClick={handleLogin}
           className="premium-btn"
           style={{
-            width: "100%", 
-            padding: "14px", 
+            width: "100%",
+            padding: "14px",
             marginBottom: "20px"
           }}
         >
           Sign In
         </button>
 
-        <div style={{ 
-          height: "1px", 
-          backgroundColor: "var(--border-color)", 
-          margin: "12px 0" 
+        <div style={{
+          height: "1px",
+          backgroundColor: "var(--border-color)",
+          margin: "12px 0"
         }} />
 
         <p style={{ color: "var(--text-secondary)", fontSize: "14px" }}>

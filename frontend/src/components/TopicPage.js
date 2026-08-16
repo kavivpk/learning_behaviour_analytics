@@ -65,7 +65,7 @@ function TopicPage() {
     }, 1000);
 
     if (studentId) {
-      axios.get(`http://127.0.0.1:5000/api/user_focus/${studentId}/${name}`)
+      axios.get(`https://learning-behaviour-backend.onrender.com/api/user_focus/${studentId}/${name}`)
         .then(res => setStudiedSections(res.data))
         .catch(err => console.log("Error fetching focus:", err));
     }
@@ -79,7 +79,7 @@ function TopicPage() {
     setActiveSection(sectionId);
     if (!studiedSections.includes(sectionId)) {
       setStudiedSections(prev => [...prev, sectionId]);
-      axios.post("http://127.0.0.1:5000/api/track_focus", {
+      axios.post("https://learning-behaviour-backend.onrender.com/api/track_focus", {
         user_id: studentId,
         topic: name,
         focus: sectionId
@@ -92,10 +92,10 @@ function TopicPage() {
       if (!studentId) return;
 
       // Ensure we use the same topicData logic as the UI
-      const currentTopicData = topicContents[name.toLowerCase()] || { 
-        sections: [{ id: "General", title: name, content: `Study material for ${name} is being updated...` }] 
+      const currentTopicData = topicContents[name.toLowerCase()] || {
+        sections: [{ id: "General", title: name, content: `Study material for ${name} is being updated...` }]
       };
-      
+
       const studiedText = currentTopicData.sections
         .filter(s => studiedSections.includes(s.id))
         .map(s => s.content)
@@ -104,7 +104,7 @@ function TopicPage() {
       // Using localStorage for better reliability across page transitions
       localStorage.setItem(`study_content_${name.toLowerCase()}`, studiedText);
 
-      await axios.post("http://127.0.0.1:5000/api/track", {
+      await axios.post("https://learning-behaviour-backend.onrender.com/api/track", {
         student_id: studentId,
         topic: name,
         time_spent: timeSpent,
@@ -172,30 +172,30 @@ function TopicPage() {
 
           <div style={{ textAlign: "center", marginTop: "60px", borderTop: "1px solid var(--border-color)", paddingTop: "40px" }}>
             <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "16px" }}>
-              Time Spent: {Math.floor(timeSpent/60)}m {timeSpent%60}s
+              Time Spent: {Math.floor(timeSpent / 60)}m {timeSpent % 60}s
             </p>
             <div style={{ display: "flex", gap: "16px", justifyContent: "center" }}>
-              <button 
-                onClick={handleFinishTopic} 
+              <button
+                onClick={handleFinishTopic}
                 disabled={studiedSections.length === 0}
                 className={studiedSections.length > 0 ? "premium-btn" : ""}
                 style={{
                   padding: "12px 24px", fontSize: "14px",
-                  backgroundColor: studiedSections.length > 0 ? "" : "var(--border-color)", 
-                  color: studiedSections.length > 0 ? "" : "var(--text-muted)", 
+                  backgroundColor: studiedSections.length > 0 ? "" : "var(--border-color)",
+                  color: studiedSections.length > 0 ? "" : "var(--text-muted)",
                   cursor: studiedSections.length > 0 ? "pointer" : "not-allowed"
                 }}
               >
                 Generate AI Quiz
               </button>
-              <a 
+              <a
                 href={topicData.w3url}
                 target="_blank"
                 rel="noreferrer"
                 className="glass-card"
                 style={{
                   padding: "12px 24px", fontSize: "14px", fontWeight: "700",
-                  textDecoration: "none", color: "var(--text-main)", 
+                  textDecoration: "none", color: "var(--text-main)",
                   display: "inline-block"
                 }}
               >
