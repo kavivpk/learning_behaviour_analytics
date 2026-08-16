@@ -1,23 +1,23 @@
+import os
 import mysql.connector
 
-# Use basic settings from db.py but connect without the target database first
+
 def init_db():
     try:
-        # Step 1: Connect to MySQL without specifying a database
         conn = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="Kavi@2006"
+            host=os.getenv("DB_HOST"),
+            port=int(os.getenv("DB_PORT", "3306")),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            database=os.getenv("DB_NAME"),
+            ssl_disabled=False,
+            ssl_verify_cert=False,
+            ssl_verify_identity=False
         )
+
         cursor = conn.cursor()
-        
-        # Step 2: Create the database if it doesn't exist
-        print("Checking/Creating database 'web_analyzes'...")
-        cursor.execute("CREATE DATABASE IF NOT EXISTS web_analyzes")
-        cursor.execute("USE web_analyzes")
-        
-        # Step 3: Create Users table
-        print("Checking/Creating table 'users'...")
+
+        # Users table
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -25,12 +25,14 @@ def init_db():
                 email VARCHAR(150) NOT NULL UNIQUE,
                 course VARCHAR(100) NOT NULL,
                 password VARCHAR(255) NOT NULL,
+                points INT DEFAULT 0,
+                streak_count INT DEFAULT 0,
+                last_activity DATE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        
-        # Step 4: Create Activity table
-        print("Checking/Creating table 'activity'...")
+
+        # Activity table
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS activity (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -45,15 +47,31 @@ def init_db():
                     ON DELETE CASCADE
             )
         """)
-        
+
+        # Question history table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS question_history (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                topic VARCHAR(100) NOT NULL,
+                question_text TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                CONSTRAINT fk_history_user
+                    FOREIGN KEY (user_id) REFERENCES users(id)
+                    ON DELETE CASCADE
+            )
+        """)
+
         conn.commit()
-        print("\nSuccess: Database and tables are ready!")
+
         cursor.close()
         conn.close()
-    except mysql.connector.Error as err:
-        print(f"\nMySQL Error: {err}")
+
+        print("Database tables created successfully!")
+
     except Exception as e:
-        print(f"\nUnexpected Error: {e}")
+        print(f"Database initialization error: {e}")
+
 
 if __name__ == "__main__":
     init_db()

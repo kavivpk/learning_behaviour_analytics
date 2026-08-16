@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from db import get_db_connection
+from init_db import init_db
 from analytics import get_analytics
 from groq import Groq
 import os
@@ -48,7 +49,10 @@ def migrate_db():
     except Exception as e:
         print(f"Migration Error: {e}")
 
-# Run migration on startup
+# Initialize database tables first
+init_db()
+
+# Apply database migrations
 migrate_db()
 
 @app.route("/")
